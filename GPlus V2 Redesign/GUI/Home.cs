@@ -6,5 +6,10 @@ namespace GPlus_V2_Redesign
         {
             InitializeComponent();
         }
+
+        private void Home_Load(object sender, EventArgs e)
+        {
+            _ControlBox.Location = new Point(Width - _ControlBox.Width, 0);
+        }
     }
 }
