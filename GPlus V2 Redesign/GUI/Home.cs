@@ -21,9 +21,7 @@ namespace GPlus_V2_Redesign
             const int WM_COPYDATA = 0x4A;
             if (m.Msg == WM_COPYDATA)
             {
-                COPYDATASTRUCT cds = (COPYDATASTRUCT)Marshal.PtrToStructure(m.LParam, typeof(COPYDATASTRUCT));
-                SteamMessage msg = (SteamMessage)Marshal.PtrToStructure(cds.lpData, typeof(SteamMessage));
-                Debug.WriteLine($"SteamID: {msg.steamID}, PID: {msg.processID}");
+                CommunicationManager.ParseCommunication(m);
             }
             base.WndProc(ref m);
         }
