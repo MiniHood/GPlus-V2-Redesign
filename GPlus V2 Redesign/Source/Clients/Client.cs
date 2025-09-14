@@ -17,20 +17,7 @@ using System.Threading.Tasks;
 
 namespace GPlus_V2_Redesign.Game.Clients
 {
-    internal static class Extensions
-    {
-        [DllImport("Kernel32.dll")]
-        private static extern bool QueryFullProcessImageName([In] IntPtr hProcess, [In] uint dwFlags, [Out] StringBuilder lpExeName, [In, Out] ref uint lpdwSize);
-
-        public static string? GetMainModuleFileName(this Process process, int buffer = 1024)
-        {
-            var fileNameBuilder = new StringBuilder(buffer);
-            uint bufferLength = (uint)fileNameBuilder.Capacity + 1;
-            return QueryFullProcessImageName(process.Handle, 0, fileNameBuilder, ref bufferLength) ?
-                fileNameBuilder.ToString() :
-                null;
-        }
-    }
+    
     internal class Client
     {
         public LoginDetails LoginDetails;
@@ -44,11 +31,12 @@ namespace GPlus_V2_Redesign.Game.Clients
         public event EventHandler? OnSteamStarted;
         public event EventHandler? OnGMODStarted;
 
+        #region Private
+
         private bool IsSteamOpen = false;
         private bool IsGMODOpen = false;
         private Process Steam;
         private Process GMOD;
-
 
         private void Connect()
         {
@@ -99,14 +87,14 @@ namespace GPlus_V2_Redesign.Game.Clients
                         }
                         catch
                         {
-                           
+
                         }
                     }
                 }
             }
             catch
             {
-                
+
             }
 
             return children;
@@ -185,13 +173,67 @@ namespace GPlus_V2_Redesign.Game.Clients
             return false;
         }
 
+        private async Task CreateRCONConnection()
+        {
+            RCON = new RCON(IPAddress.Parse("127.0.0.1"), port: RCONPort, password: SettingsManager.CurrentSettings.General.RCONPassword);
+            await RCON.ConnectAsync();
+            Enviroment._rconConnection = RCON;
+        }
 
+        private async void InitialiseClientLoop()
+        {
+            await Task.Run(() => ClientLoop());
+        }
+
+        private async Task ClientLoop()
+        {
+#if DEBUG
+            Debug.WriteLine($"[Client] Starting client loop for {LoginDetails.Username}");
+#endif
+            while (true)
+            {
+                if (Steam == null)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] Steam process is null, exiting client loop for {LoginDetails.Username}");
+#endif
+                    break;
+                }
+
+                if (GMOD == null)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] GMOD process is null, exiting client loop for {LoginDetails.Username}");
+#endif
+                    break;
+                }
+
+                while (RCON == null)
+                {
+                    await CreateRCONConnection();
+                    await Task.Delay(10000);
+                }
+
+                if (ConnectedServer != null)
+                {
+                    Status? status = await GetCurrentStatus();
+                    if (status != null && !status.PublicHost.Contains(ConnectedServer.IP))
+                        Connect();
+                    else if (status == null || status.PublicHost == null)
+                        Connect();
+                }
+            }
+        }
+
+        #endregion
 
         public async Task<bool> InitialiseSteamAsync()
         {
             try
             {
+#if DEBUG
                 Debug.WriteLine($"[Client] Launching Steam for {LoginDetails.Username}...");
+#endif
 
                 var processResult = SandboxieWrapper.RunBoxed(
                     SettingsManager.CurrentSettings.General.SteamPath,
@@ -210,7 +252,7 @@ namespace GPlus_V2_Redesign.Game.Clients
                 Steam = processResult.Data;
 #if DEBUG
 
-                Debug.WriteLine($"[Client] Steam launched with PID {Steam.Id} for {LoginDetails.Username} at {Steam.GetMainModuleFileName()}");
+                Debug.WriteLine($"[Client] Steam launched with PID {Steam.Id} for {LoginDetails.Username}");
 #endif
 
                 bool loggedIn = await WaitForSteamLoginAsync(Steam);
@@ -233,7 +275,9 @@ namespace GPlus_V2_Redesign.Game.Clients
             }
             catch (Exception ex)
             {
+#if DEBUG
                 Debug.WriteLine($"[Client] Exception while starting Steam for {LoginDetails.Username}: {ex}");
+#endif
                 return false;
             }
         }
@@ -244,46 +288,6 @@ namespace GPlus_V2_Redesign.Game.Clients
                 return;
             Steam.Close();
             Steam.Dispose();
-        }
-
-        public async Task<bool> InitialiseGMODAsync()
-        {
-            if (!IsSteamOpen)
-            {
-#if DEBUG
-                Debug.WriteLine("[Client] Waiting for Steam to start...");
-#endif
-                while (!IsSteamOpen)
-                    await Task.Delay(500);
-            }
-
-            var processResult = SandboxieWrapper.RunBoxed(
-                Path.Combine(
-                    SettingsManager.CurrentSettings.General.GMODDirectory,
-                    SettingsManager.CurrentSettings.General.GMODExecutable
-                ),
-                SettingsManager.CurrentSettings.General.GMODLaunchArguments,
-                Enviroment._sandboxName
-            );
-
-
-#if DEBUG
-            Debug.WriteLine(Path.Combine(
-                    SettingsManager.CurrentSettings.General.GMODDirectory,
-                    SettingsManager.CurrentSettings.General.GMODExecutable
-                ).ToString());
-            Debug.WriteLine($"Attempting to start garry\'s mod.  {processResult.Data}");
-#endif
-            if (processResult.Data == null)
-                return false;
-
-            GMOD = processResult.Data;
-            IsGMODOpen = true;
-            OnGMODStarted?.Invoke(this, EventArgs.Empty);
-#if DEBUG
-            Debug.WriteLine($"[Client] GMOD started for {LoginDetails.Username} with PID {GMOD.Id}");
-#endif
-            return true;
         }
 
 
@@ -299,54 +303,9 @@ namespace GPlus_V2_Redesign.Game.Clients
             GMOD.Dispose();
         }
 
-        private async Task ClientLoop()
+        public void SetGMOD(uint ProcessID)
         {
-            Debug.WriteLine($"[Client] Starting client loop for {LoginDetails.Username}");
-            while (true)
-            {
-                if(Steam == null)
-                {
-#if DEBUG
-                    Debug.WriteLine($"[Client] Steam process is null, exiting client loop for {LoginDetails.Username}");
-#endif
-                    break;
-                }
-                
-                if(GMOD == null)
-                {
-#if DEBUG
-                    Debug.WriteLine($"[Client] GMOD process is null, exiting client loop for {LoginDetails.Username}");
-#endif
-                    break;
-                }
-
-                while(RCON == null)
-                {
-                    await CreateRCONConnection();
-                    await Task.Delay(10000);
-                }
-
-                if(ConnectedServer != null)
-                {
-                    Status? status = await GetCurrentStatus();
-                    if (status != null && !status.PublicHost.Contains(ConnectedServer.IP))
-                        Connect();
-                    else if(status == null || status.PublicHost == null)
-                        Connect();
-                }
-            }
-        }
-
-        private async Task CreateRCONConnection()
-        {
-            RCON = new RCON(IPAddress.Parse("127.0.0.1"), port: RCONPort, password: SettingsManager.CurrentSettings.General.RCONPassword);
-            await RCON.ConnectAsync();
-            Enviroment._rconConnection = RCON;
-        }
-
-        private async void InitialiseClientLoop()
-        {
-            await Task.Run(() => ClientLoop());
+            GMOD = Process.GetProcessById((int)ProcessID);
         }
 
         public Client(LoginDetails loginDetails, Sandboxie enviroment)
@@ -365,11 +324,6 @@ namespace GPlus_V2_Redesign.Game.Clients
                     return;
             });
 
-            OnSteamStarted += async (sender, e) =>
-            {
-                await InitialiseGMODAsync();
-            };
-
 #if DEBUG
             Debug.WriteLine($"[Client] Subscribed too OnSteamStarted");
 #endif
@@ -381,6 +335,8 @@ namespace GPlus_V2_Redesign.Game.Clients
             Debug.WriteLine($"[Client] Subscribed too OnGMODStarted");
 #endif
         }
+
+        
 
 
         ~Client()
