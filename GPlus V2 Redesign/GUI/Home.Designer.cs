@@ -69,6 +69,7 @@
             // 
             // _ucClients
             // 
+            _ucClients.BackColor = Color.FromArgb(26, 26, 26);
             _ucClients.Location = new Point(153, 37);
             _ucClients.Name = "_ucClients";
             _ucClients.Size = new Size(599, 427);
@@ -76,6 +77,7 @@
             // 
             // _ucDashboard
             // 
+            _ucDashboard.BackColor = Color.FromArgb(26, 26, 26);
             _ucDashboard.Location = new Point(153, 37);
             _ucDashboard.Name = "_ucDashboard";
             _ucDashboard.Size = new Size(599, 427);
@@ -83,6 +85,7 @@
             // 
             // _ucServers
             // 
+            _ucServers.BackColor = Color.FromArgb(26, 26, 26);
             _ucServers.Location = new Point(153, 37);
             _ucServers.Name = "_ucServers";
             _ucServers.Size = new Size(599, 427);
@@ -90,6 +93,7 @@
             // 
             // _ucSettings
             // 
+            _ucSettings.BackColor = Color.FromArgb(26, 26, 26);
             _ucSettings.Location = new Point(153, 37);
             _ucSettings.Name = "_ucSettings";
             _ucSettings.Size = new Size(599, 427);
