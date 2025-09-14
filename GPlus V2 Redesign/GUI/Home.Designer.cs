@@ -98,6 +98,7 @@
             _ucSettings.Name = "_ucSettings";
             _ucSettings.Size = new Size(599, 427);
             _ucSettings.TabIndex = 7;
+            _ucSettings.Load += _ucSettings_Load;
             // 
             // Home
             // 
