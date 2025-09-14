@@ -61,11 +61,11 @@ namespace GPlus_V2_Redesign.Source
                 BoxCreation = new Settings.SandboxieBoxCreation
                 {
                     ConfigLevel = "ConfigLevel 7",
-                    Enabled = "Enabled Y",
-                    AutoDelete = "AutoDelete N",
-                    BoxName = "BoxNameTitle Y",
-                    AutoRecover = "AutoRecover Y",
-                    PromptForFileMigration = "PromptForFileMigration N",
+                    Enabled = "Enabled y",
+                    AutoDelete = "AutoDelete n",
+                    BoxName = "BoxNameTitle y",
+                    AutoRecover = "AutoRecover y",
+                    PromptForFileMigration = "PromptForFileMigration n",
                     CopyLimitKb = "CopyLimitKb 50000000",
                     Template = "Template AutoRecoverIgnore"
                 }

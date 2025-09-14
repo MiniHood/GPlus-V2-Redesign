@@ -2,8 +2,7 @@
 {
     struct LoginDetails
     {
-        public string UncleanedUsername;
-        public string CleanedUsername;
+        public string Username;
         public string Password;
     }
 }
