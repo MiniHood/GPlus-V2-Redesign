@@ -31,6 +31,11 @@ namespace GPlus_V2_Redesign.Game.Clients
             return client;
         }
 
+        private static void ScanSyncOpenGMOD()
+        {
+            // Okay this is weird, we're going to have to scan every open gmod process in all sandboxes, then with our dll request the proc id and steam id, then sync them up in a list that way. 
+        }
+
         public static List<Client> GetAllClients()
         {
             return _clients;

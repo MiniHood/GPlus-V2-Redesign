@@ -1,12 +1,15 @@
 ﻿using CoreRCON;
 using CoreRCON.Parsers.Standard;
 using GPlus_V2_Redesign.Game.Servers;
+using GPlus_V2_Redesign.GUI.Elements;
 using GPlus_V2_Redesign.Source;
 using GPlus_V2_Redesign.Source.Sandboxie;
 using System.Diagnostics;
-using System.Net;
-using System.Threading.Tasks;
 using System.Management;
+using System.Net;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
 
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
 #pragma warning disable CS8601 // Possible null reference assignment.
@@ -14,7 +17,20 @@ using System.Management;
 
 namespace GPlus_V2_Redesign.Game.Clients
 {
+    internal static class Extensions
+    {
+        [DllImport("Kernel32.dll")]
+        private static extern bool QueryFullProcessImageName([In] IntPtr hProcess, [In] uint dwFlags, [Out] StringBuilder lpExeName, [In, Out] ref uint lpdwSize);
 
+        public static string? GetMainModuleFileName(this Process process, int buffer = 1024)
+        {
+            var fileNameBuilder = new StringBuilder(buffer);
+            uint bufferLength = (uint)fileNameBuilder.Capacity + 1;
+            return QueryFullProcessImageName(process.Handle, 0, fileNameBuilder, ref bufferLength) ?
+                fileNameBuilder.ToString() :
+                null;
+        }
+    }
     internal class Client
     {
         public LoginDetails LoginDetails;
@@ -33,7 +49,7 @@ namespace GPlus_V2_Redesign.Game.Clients
         private Process Steam;
         private Process GMOD;
 
-        
+
         private void Connect()
         {
             if (RCON == null || RCON.Connected == false)
@@ -193,7 +209,8 @@ namespace GPlus_V2_Redesign.Game.Clients
 
                 Steam = processResult.Data;
 #if DEBUG
-                Debug.WriteLine($"[Client] Steam launched with PID {Steam.Id} for {LoginDetails.Username}");
+
+                Debug.WriteLine($"[Client] Steam launched with PID {Steam.Id} for {LoginDetails.Username} at {Steam.GetMainModuleFileName()}");
 #endif
 
                 bool loggedIn = await WaitForSteamLoginAsync(Steam);
@@ -220,8 +237,6 @@ namespace GPlus_V2_Redesign.Game.Clients
                 return false;
             }
         }
-
-
 
         public void StopSteam()
         {
@@ -251,6 +266,14 @@ namespace GPlus_V2_Redesign.Game.Clients
                 Enviroment._sandboxName
             );
 
+
+#if DEBUG
+            Debug.WriteLine(Path.Combine(
+                    SettingsManager.CurrentSettings.General.GMODDirectory,
+                    SettingsManager.CurrentSettings.General.GMODExecutable
+                ).ToString());
+            Debug.WriteLine($"Attempting to start garry\'s mod.  {processResult.Data}");
+#endif
             if (processResult.Data == null)
                 return false;
 
@@ -340,13 +363,23 @@ namespace GPlus_V2_Redesign.Game.Clients
                 bool steamStarted = await InitialiseSteamAsync();
                 if (!steamStarted)
                     return;
-
-                bool gmodStarted = await InitialiseGMODAsync();
-                if (!gmodStarted)
-                    return;
-
-                InitialiseClientLoop();
             });
+
+            OnSteamStarted += async (sender, e) =>
+            {
+                await InitialiseGMODAsync();
+            };
+
+#if DEBUG
+            Debug.WriteLine($"[Client] Subscribed too OnSteamStarted");
+#endif
+            OnGMODStarted += (sender, e) =>
+            {
+                InitialiseClientLoop();
+            };
+#if DEBUG
+            Debug.WriteLine($"[Client] Subscribed too OnGMODStarted");
+#endif
         }
 
 
