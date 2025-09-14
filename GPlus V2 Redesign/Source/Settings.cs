@@ -19,6 +19,7 @@ namespace GPlus_V2_Redesign.Source
             public string? GMODLaunchArguments { get; set; } = null;
             public string? RCONPassword { get; set; } = null;
             public string? CommunicationDLLPath { get; set; } = null;
+            public string? SteamAPIKey { get; set; } = null;
 
         }
 
@@ -59,7 +60,8 @@ namespace GPlus_V2_Redesign.Source
                         "-heapsize 262144 -disallowhwmorph -high -reflectionTextureSize 0 " +
                         "-soft -softparticlesdefaultoff",
                     RCONPassword = "changeme",
-                    CommunicationDLLPath = $"{Application.StartupPath}\\Resources\\Communication.dll"
+                    CommunicationDLLPath = $"{Application.StartupPath}\\Resources\\Communication.dll",
+                    SteamAPIKey = "changeme",
                 },
                 BoxCreation = new Settings.SandboxieBoxCreation
                 {
