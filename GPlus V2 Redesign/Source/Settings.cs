@@ -47,8 +47,8 @@ namespace GPlus_V2_Redesign.Source
                 General = new Settings.GeneralSettings
                 {
                     SandboxiePath = @"C:\Program Files\Sandboxie-Plus\",
-                    SteamPath = @"C:\Program Files (x86)\Steam\steam.exe",
-                    GMODDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\GarrysMod\",
+                    SteamPath = @"D:\Steam\steam.exe",
+                    GMODDirectory = @"D:\Steam\steamapps\common\GarrysMod",
                     GMODExecutable = "hl2.exe",
                     SandboxieBoxCreator = @"C:\Program Files\Sandboxie-Plus\SbieIni.exe",
                     GMODLaunchArguments =
