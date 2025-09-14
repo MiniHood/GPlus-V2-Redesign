@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GPlus_V2_Redesign.Source.Network
+﻿namespace GPlus_V2_Redesign.Source.Network
 {
     internal class RCON
     {
+        public int RCONPort;
+
+        public bool IsConnected()
+        {
+
+        }
     }
 }
