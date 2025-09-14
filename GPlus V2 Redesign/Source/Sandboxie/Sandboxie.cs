@@ -10,10 +10,8 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
         public Client _client;
         public Sandboxie(LoginDetails loginDetails)
         {
-            _sandboxName = loginDetails.CleanedUsername;
-
-            // Create a client for this sandbox
-            _client = new Client(loginDetails, this);
+            _sandboxName = loginDetails.Username;
+            _client = ClientManager.CreateClient(loginDetails, this);
         }
     }
 }

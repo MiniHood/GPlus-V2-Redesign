@@ -28,21 +28,12 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
 
         public static Sandboxie CreateNewSandbox(LoginDetails loginDetails)
         {
+            Debug.WriteLine("Creating new sandbox");
             // Null check rq
             Settings CurrentSettings = SettingsManager.CurrentSettings;
             if (CurrentSettings == null)
                 throw new Exception("Settings not loaded correctly.");
-
-            // honestly probably not needed but whats a howniceofyou release without unnessacery code and shitty spelling
-            string CleanedName = new string(loginDetails.UncleanedUsername.Where(c => char.IsLetterOrDigit(c)).ToArray());
-            if (string.IsNullOrWhiteSpace(CleanedName))
-                CleanedName = $"GPlusUser{new Random().Next(1000, 9999)}";
-
-            Sandboxie? ExistingSandbox = Sandboxies.FirstOrDefault(s => s._sandboxName == CleanedName);
-            if (ExistingSandbox != null)
-            {
-                throw new Exception($"A sandbox with the name {CleanedName} already exists.");
-            }
+            Debug.WriteLine("Loaded settings");
 
             // Lets now create the actual sandboxie, only way to do it is either through files or letting the sandboxie creator do it for us, probably safer to give it to teh creator
             // Steam doesn't allow 2 of the same usernames so we'll use that as the sandbox name
@@ -61,22 +52,30 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
                 SettingsManager.CurrentSettings.BoxCreation.Template,
             };
 
+
             foreach (var arg in SandboxieArguments)
             {
                 if (arg == null)
                     throw new Exception("One or more Sandboxie box creation settings are null, please check your settings file.");
 
+                Debug.WriteLine($"Creating sandbox with argument: {arg} | {CurrentSettings.General.SandboxieBoxCreator} set {loginDetails.Username} {arg}");
+
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
                     FileName = CurrentSettings.General.SandboxieBoxCreator,
-                    Arguments = $"set {CleanedName} {arg}",
+                    Arguments = $"set {loginDetails.Username} {arg}",
                     UseShellExecute = false,
-                    CreateNoWindow = true
+                    CreateNoWindow = false // could turn this on but then the user wouldn't get any noticable feedback, users may find it more satisfying to see the window pop up
                 };
+
+                using (Process proc = Process.Start(startInfo))
+                {
+                    proc.WaitForExit();
+                }
             }
 
 
-            Sandboxie NewSandbox = new Sandboxie(new LoginDetails { CleanedUsername = CleanedName, UncleanedUsername = loginDetails.UncleanedUsername, Password = loginDetails.Password});
+            Sandboxie NewSandbox = new Sandboxie(loginDetails);
             RegisterSandbox(NewSandbox);
             return NewSandbox;
         }
