@@ -1,3 +1,5 @@
+using GPlus_V2_Redesign.GUI.Helpers;
+
 namespace GPlus_V2_Redesign
 {
     public partial class Home : Form
@@ -9,7 +11,7 @@ namespace GPlus_V2_Redesign
 
         private void Home_Load(object sender, EventArgs e)
         {
-            _ControlBox.Location = new Point(Width - _ControlBox.Width, 0);
+            UserControlLoader.InitializeUserControls(_ucDashboard, _ucClients, _ucServers, _ucSettings, _ucNavBar);
         }
     }
 }

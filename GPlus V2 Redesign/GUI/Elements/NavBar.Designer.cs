@@ -29,19 +29,19 @@
         private void InitializeComponent()
         {
             _NavBar = new ReaLTaiizor.Controls.NightPanel();
-            button4 = new ReaLTaiizor.Controls.Button();
-            button3 = new ReaLTaiizor.Controls.Button();
-            button2 = new ReaLTaiizor.Controls.Button();
-            button1 = new ReaLTaiizor.Controls.Button();
+            _btnSettings = new ReaLTaiizor.Controls.Button();
+            _btnClients = new ReaLTaiizor.Controls.Button();
+            _btnServers = new ReaLTaiizor.Controls.Button();
+            _btnDashboard = new ReaLTaiizor.Controls.Button();
             _NavBar.SuspendLayout();
             SuspendLayout();
             // 
             // _NavBar
             // 
-            _NavBar.Controls.Add(button1);
-            _NavBar.Controls.Add(button4);
-            _NavBar.Controls.Add(button3);
-            _NavBar.Controls.Add(button2);
+            _NavBar.Controls.Add(_btnSettings);
+            _NavBar.Controls.Add(_btnClients);
+            _NavBar.Controls.Add(_btnServers);
+            _NavBar.Controls.Add(_btnDashboard);
             _NavBar.Dock = DockStyle.Left;
             _NavBar.ForeColor = Color.FromArgb(250, 250, 250);
             _NavBar.LeftSideColor = Color.FromArgb(32, 32, 32);
@@ -52,85 +52,89 @@
             _NavBar.Size = new Size(157, 464);
             _NavBar.TabIndex = 4;
             // 
-            // button4
+            // _btnSettings
             // 
-            button4.BackColor = Color.Transparent;
-            button4.BorderColor = Color.FromArgb(32, 34, 37);
-            button4.Dock = DockStyle.Top;
-            button4.EnteredBorderColor = Color.FromArgb(42, 42, 42);
-            button4.EnteredColor = Color.FromArgb(32, 34, 37);
-            button4.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button4.Image = null;
-            button4.ImageAlign = ContentAlignment.MiddleLeft;
-            button4.InactiveColor = Color.FromArgb(32, 34, 37);
-            button4.Location = new Point(0, 232);
-            button4.Name = "button4";
-            button4.PressedBorderColor = Color.FromArgb(45, 45, 45);
-            button4.PressedColor = Color.FromArgb(36, 36, 36);
-            button4.Size = new Size(157, 116);
-            button4.TabIndex = 7;
-            button4.Text = "Clients";
-            button4.TextAlignment = StringAlignment.Center;
+            _btnSettings.BackColor = Color.Transparent;
+            _btnSettings.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnSettings.Dock = DockStyle.Top;
+            _btnSettings.EnteredBorderColor = Color.FromArgb(42, 42, 42);
+            _btnSettings.EnteredColor = Color.FromArgb(32, 34, 37);
+            _btnSettings.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            _btnSettings.Image = null;
+            _btnSettings.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnSettings.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnSettings.Location = new Point(0, 348);
+            _btnSettings.Name = "_btnSettings";
+            _btnSettings.PressedBorderColor = Color.FromArgb(45, 45, 45);
+            _btnSettings.PressedColor = Color.FromArgb(36, 36, 36);
+            _btnSettings.Size = new Size(157, 116);
+            _btnSettings.TabIndex = 8;
+            _btnSettings.Text = "Settings";
+            _btnSettings.TextAlignment = StringAlignment.Center;
+            _btnSettings.Click += _btnSettings_Click;
             // 
-            // button3
+            // _btnClients
             // 
-            button3.BackColor = Color.Transparent;
-            button3.BorderColor = Color.FromArgb(32, 34, 37);
-            button3.Dock = DockStyle.Top;
-            button3.EnteredBorderColor = Color.FromArgb(42, 42, 42);
-            button3.EnteredColor = Color.FromArgb(32, 34, 37);
-            button3.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button3.Image = null;
-            button3.ImageAlign = ContentAlignment.MiddleLeft;
-            button3.InactiveColor = Color.FromArgb(32, 34, 37);
-            button3.Location = new Point(0, 116);
-            button3.Name = "button3";
-            button3.PressedBorderColor = Color.FromArgb(45, 45, 45);
-            button3.PressedColor = Color.FromArgb(36, 36, 36);
-            button3.Size = new Size(157, 116);
-            button3.TabIndex = 6;
-            button3.Text = "Servers";
-            button3.TextAlignment = StringAlignment.Center;
+            _btnClients.BackColor = Color.Transparent;
+            _btnClients.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnClients.Dock = DockStyle.Top;
+            _btnClients.EnteredBorderColor = Color.FromArgb(42, 42, 42);
+            _btnClients.EnteredColor = Color.FromArgb(32, 34, 37);
+            _btnClients.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            _btnClients.Image = null;
+            _btnClients.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnClients.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnClients.Location = new Point(0, 232);
+            _btnClients.Name = "_btnClients";
+            _btnClients.PressedBorderColor = Color.FromArgb(45, 45, 45);
+            _btnClients.PressedColor = Color.FromArgb(36, 36, 36);
+            _btnClients.Size = new Size(157, 116);
+            _btnClients.TabIndex = 7;
+            _btnClients.Text = "Clients";
+            _btnClients.TextAlignment = StringAlignment.Center;
+            _btnClients.Click += _btnClients_Click;
             // 
-            // button2
+            // _btnServers
             // 
-            button2.BackColor = Color.Transparent;
-            button2.BorderColor = Color.FromArgb(32, 34, 37);
-            button2.Dock = DockStyle.Top;
-            button2.EnteredBorderColor = Color.FromArgb(42, 42, 42);
-            button2.EnteredColor = Color.FromArgb(32, 34, 37);
-            button2.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button2.Image = null;
-            button2.ImageAlign = ContentAlignment.MiddleLeft;
-            button2.InactiveColor = Color.FromArgb(32, 34, 37);
-            button2.Location = new Point(0, 0);
-            button2.Name = "button2";
-            button2.PressedBorderColor = Color.FromArgb(45, 45, 45);
-            button2.PressedColor = Color.FromArgb(36, 36, 36);
-            button2.Size = new Size(157, 116);
-            button2.TabIndex = 5;
-            button2.Text = "Dashboard";
-            button2.TextAlignment = StringAlignment.Center;
+            _btnServers.BackColor = Color.Transparent;
+            _btnServers.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnServers.Dock = DockStyle.Top;
+            _btnServers.EnteredBorderColor = Color.FromArgb(42, 42, 42);
+            _btnServers.EnteredColor = Color.FromArgb(32, 34, 37);
+            _btnServers.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            _btnServers.Image = null;
+            _btnServers.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnServers.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnServers.Location = new Point(0, 116);
+            _btnServers.Name = "_btnServers";
+            _btnServers.PressedBorderColor = Color.FromArgb(45, 45, 45);
+            _btnServers.PressedColor = Color.FromArgb(36, 36, 36);
+            _btnServers.Size = new Size(157, 116);
+            _btnServers.TabIndex = 6;
+            _btnServers.Text = "Servers";
+            _btnServers.TextAlignment = StringAlignment.Center;
+            _btnServers.Click += _btnServers_Click;
             // 
-            // button1
+            // _btnDashboard
             // 
-            button1.BackColor = Color.Transparent;
-            button1.BorderColor = Color.FromArgb(32, 34, 37);
-            button1.Dock = DockStyle.Top;
-            button1.EnteredBorderColor = Color.FromArgb(42, 42, 42);
-            button1.EnteredColor = Color.FromArgb(32, 34, 37);
-            button1.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button1.Image = null;
-            button1.ImageAlign = ContentAlignment.MiddleLeft;
-            button1.InactiveColor = Color.FromArgb(32, 34, 37);
-            button1.Location = new Point(0, 348);
-            button1.Name = "button1";
-            button1.PressedBorderColor = Color.FromArgb(45, 45, 45);
-            button1.PressedColor = Color.FromArgb(36, 36, 36);
-            button1.Size = new Size(157, 116);
-            button1.TabIndex = 8;
-            button1.Text = "Settings";
-            button1.TextAlignment = StringAlignment.Center;
+            _btnDashboard.BackColor = Color.Transparent;
+            _btnDashboard.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnDashboard.Dock = DockStyle.Top;
+            _btnDashboard.EnteredBorderColor = Color.FromArgb(42, 42, 42);
+            _btnDashboard.EnteredColor = Color.FromArgb(32, 34, 37);
+            _btnDashboard.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            _btnDashboard.Image = null;
+            _btnDashboard.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnDashboard.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnDashboard.Location = new Point(0, 0);
+            _btnDashboard.Name = "_btnDashboard";
+            _btnDashboard.PressedBorderColor = Color.FromArgb(45, 45, 45);
+            _btnDashboard.PressedColor = Color.FromArgb(36, 36, 36);
+            _btnDashboard.Size = new Size(157, 116);
+            _btnDashboard.TabIndex = 5;
+            _btnDashboard.Text = "Dashboard";
+            _btnDashboard.TextAlignment = StringAlignment.Center;
+            _btnDashboard.Click += _btnDashboard_Click;
             // 
             // NavBar
             // 
@@ -146,9 +150,9 @@
         #endregion
 
         private ReaLTaiizor.Controls.NightPanel _NavBar;
-        private ReaLTaiizor.Controls.Button button1;
-        private ReaLTaiizor.Controls.Button button4;
-        private ReaLTaiizor.Controls.Button button3;
-        private ReaLTaiizor.Controls.Button button2;
+        private ReaLTaiizor.Controls.Button _btnSettings;
+        private ReaLTaiizor.Controls.Button _btnClients;
+        private ReaLTaiizor.Controls.Button _btnServers;
+        private ReaLTaiizor.Controls.Button _btnDashboard;
     }
 }

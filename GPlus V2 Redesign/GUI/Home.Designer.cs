@@ -28,40 +28,72 @@
         /// </summary>
         private void InitializeComponent()
         {
-            _ControlBox = new ReaLTaiizor.Controls.NightControlBox();
-            navBar1 = new GPlus_V2_Redesign.GUI.Elements.NavBar();
+            _ctrlControlBox = new ReaLTaiizor.Controls.NightControlBox();
+            _ucNavBar = new GPlus_V2_Redesign.GUI.Elements.NavBar();
+            _ucClients = new GPlus_V2_Redesign.GUI.Elements.Clients();
+            _ucDashboard = new GPlus_V2_Redesign.GUI.Elements.Dashboard();
+            _ucServers = new GPlus_V2_Redesign.GUI.Elements.Servers();
+            _ucSettings = new GPlus_V2_Redesign.GUI.Elements.Settings();
             SuspendLayout();
             // 
-            // _ControlBox
+            // _ctrlControlBox
             // 
-            _ControlBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            _ControlBox.BackColor = Color.Transparent;
-            _ControlBox.CloseHoverColor = Color.FromArgb(199, 80, 80);
-            _ControlBox.CloseHoverForeColor = Color.White;
-            _ControlBox.DefaultLocation = true;
-            _ControlBox.DisableMaximizeColor = Color.FromArgb(105, 105, 105);
-            _ControlBox.DisableMinimizeColor = Color.FromArgb(105, 105, 105);
-            _ControlBox.EnableCloseColor = Color.FromArgb(160, 160, 160);
-            _ControlBox.EnableMaximizeButton = false;
-            _ControlBox.EnableMaximizeColor = Color.FromArgb(160, 160, 160);
-            _ControlBox.EnableMinimizeButton = true;
-            _ControlBox.EnableMinimizeColor = Color.FromArgb(160, 160, 160);
-            _ControlBox.Location = new Point(629, 0);
-            _ControlBox.MaximizeHoverColor = Color.FromArgb(15, 255, 255, 255);
-            _ControlBox.MaximizeHoverForeColor = Color.White;
-            _ControlBox.MinimizeHoverColor = Color.FromArgb(15, 255, 255, 255);
-            _ControlBox.MinimizeHoverForeColor = Color.White;
-            _ControlBox.Name = "_ControlBox";
-            _ControlBox.Size = new Size(139, 31);
-            _ControlBox.TabIndex = 2;
+            _ctrlControlBox.BackColor = Color.Transparent;
+            _ctrlControlBox.CloseHoverColor = Color.FromArgb(199, 80, 80);
+            _ctrlControlBox.CloseHoverForeColor = Color.White;
+            _ctrlControlBox.DefaultLocation = true;
+            _ctrlControlBox.DisableMaximizeColor = Color.FromArgb(105, 105, 105);
+            _ctrlControlBox.DisableMinimizeColor = Color.FromArgb(105, 105, 105);
+            _ctrlControlBox.Dock = DockStyle.Right;
+            _ctrlControlBox.EnableCloseColor = Color.FromArgb(160, 160, 160);
+            _ctrlControlBox.EnableMaximizeButton = false;
+            _ctrlControlBox.EnableMaximizeColor = Color.FromArgb(160, 160, 160);
+            _ctrlControlBox.EnableMinimizeButton = true;
+            _ctrlControlBox.EnableMinimizeColor = Color.FromArgb(160, 160, 160);
+            _ctrlControlBox.Location = new Point(613, 0);
+            _ctrlControlBox.MaximizeHoverColor = Color.FromArgb(15, 255, 255, 255);
+            _ctrlControlBox.MaximizeHoverForeColor = Color.White;
+            _ctrlControlBox.MinimizeHoverColor = Color.FromArgb(15, 255, 255, 255);
+            _ctrlControlBox.MinimizeHoverForeColor = Color.White;
+            _ctrlControlBox.Name = "_ctrlControlBox";
+            _ctrlControlBox.Size = new Size(139, 31);
+            _ctrlControlBox.TabIndex = 2;
             // 
-            // navBar1
+            // _ucNavBar
             // 
-            navBar1.Dock = DockStyle.Left;
-            navBar1.Location = new Point(0, 0);
-            navBar1.Name = "navBar1";
-            navBar1.Size = new Size(150, 464);
-            navBar1.TabIndex = 3;
+            _ucNavBar.Dock = DockStyle.Left;
+            _ucNavBar.Location = new Point(0, 0);
+            _ucNavBar.Name = "_ucNavBar";
+            _ucNavBar.Size = new Size(150, 464);
+            _ucNavBar.TabIndex = 3;
+            // 
+            // _ucClients
+            // 
+            _ucClients.Location = new Point(153, 37);
+            _ucClients.Name = "_ucClients";
+            _ucClients.Size = new Size(599, 427);
+            _ucClients.TabIndex = 4;
+            // 
+            // _ucDashboard
+            // 
+            _ucDashboard.Location = new Point(153, 37);
+            _ucDashboard.Name = "_ucDashboard";
+            _ucDashboard.Size = new Size(599, 427);
+            _ucDashboard.TabIndex = 5;
+            // 
+            // _ucServers
+            // 
+            _ucServers.Location = new Point(153, 37);
+            _ucServers.Name = "_ucServers";
+            _ucServers.Size = new Size(599, 427);
+            _ucServers.TabIndex = 6;
+            // 
+            // _ucSettings
+            // 
+            _ucSettings.Location = new Point(153, 37);
+            _ucSettings.Name = "_ucSettings";
+            _ucSettings.Size = new Size(599, 427);
+            _ucSettings.TabIndex = 7;
             // 
             // Home
             // 
@@ -69,8 +101,12 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
             ClientSize = new Size(752, 464);
-            Controls.Add(navBar1);
-            Controls.Add(_ControlBox);
+            Controls.Add(_ucSettings);
+            Controls.Add(_ucServers);
+            Controls.Add(_ucDashboard);
+            Controls.Add(_ucClients);
+            Controls.Add(_ucNavBar);
+            Controls.Add(_ctrlControlBox);
             FormBorderStyle = FormBorderStyle.None;
             MaximumSize = new Size(1920, 1032);
             Name = "Home";
@@ -83,7 +119,11 @@
 
         #endregion
 
-        private ReaLTaiizor.Controls.NightControlBox _ControlBox;
-        private GUI.Elements.NavBar navBar1;
+        private ReaLTaiizor.Controls.NightControlBox _ctrlControlBox;
+        private GUI.Elements.NavBar _ucNavBar;
+        private GUI.Elements.Clients _ucClients;
+        private GUI.Elements.Dashboard _ucDashboard;
+        private GUI.Elements.Servers _ucServers;
+        private GUI.Elements.Settings _ucSettings;
     }
 }
