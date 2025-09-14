@@ -28,12 +28,10 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
 
         public static Sandboxie CreateNewSandbox(LoginDetails loginDetails)
         {
-            Debug.WriteLine("Creating new sandbox");
             // Null check rq
             Settings CurrentSettings = SettingsManager.CurrentSettings;
             if (CurrentSettings == null)
                 throw new Exception("Settings not loaded correctly.");
-            Debug.WriteLine("Loaded settings");
 
             // Lets now create the actual sandboxie, only way to do it is either through files or letting the sandboxie creator do it for us, probably safer to give it to teh creator
             // Steam doesn't allow 2 of the same usernames so we'll use that as the sandbox name
@@ -57,8 +55,6 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
             {
                 if (arg == null)
                     throw new Exception("One or more Sandboxie box creation settings are null, please check your settings file.");
-
-                Debug.WriteLine($"Creating sandbox with argument: {arg} | {CurrentSettings.General.SandboxieBoxCreator} set {loginDetails.Username} {arg}");
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
