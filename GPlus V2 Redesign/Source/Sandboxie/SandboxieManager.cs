@@ -1,5 +1,4 @@
 ﻿using GPlus_V2_Redesign.GUI.Elements;
-using GPlus_V2_Redesign.Source.Network;
 using System.Diagnostics;
 
 namespace GPlus_V2_Redesign.Source.Sandboxie
@@ -17,7 +16,7 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
             {
                 port = rand.Next(10000, 60000);
             }
-            while (Sandboxies.Cast<Sandboxie>().Any(s => s._rconConnection.RCONPort == port));
+            while (Sandboxies.Cast<Sandboxie>().Any(s => s._client.RCONPort == port));
 
             return port;
         }
@@ -35,7 +34,7 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
                 throw new Exception("Settings not loaded correctly.");
 
             // honestly probably not needed but whats a howniceofyou release without unnessacery code and shitty spelling
-            string CleanedName = new string(loginDetails.Username.Where(c => char.IsLetterOrDigit(c)).ToArray());
+            string CleanedName = new string(loginDetails.UncleanedUsername.Where(c => char.IsLetterOrDigit(c)).ToArray());
             if (string.IsNullOrWhiteSpace(CleanedName))
                 CleanedName = $"GPlusUser{new Random().Next(1000, 9999)}";
 
@@ -44,12 +43,6 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
             {
                 throw new Exception($"A sandbox with the name {CleanedName} already exists.");
             }
-
-            // Create new rcon class for later connections
-            RCON rCON = new RCON
-            {
-                RCONPort = GetFreePort()
-            };
 
             // Lets now create the actual sandboxie, only way to do it is either through files or letting the sandboxie creator do it for us, probably safer to give it to teh creator
             // Steam doesn't allow 2 of the same usernames so we'll use that as the sandbox name
@@ -82,7 +75,8 @@ namespace GPlus_V2_Redesign.Source.Sandboxie
                 };
             }
 
-            Sandboxie NewSandbox = new Sandboxie(CleanedName, rCON);
+
+            Sandboxie NewSandbox = new Sandboxie(new LoginDetails { CleanedUsername = CleanedName, UncleanedUsername = loginDetails.UncleanedUsername, Password = loginDetails.Password});
             RegisterSandbox(NewSandbox);
             return NewSandbox;
         }

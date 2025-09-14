@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CoreRCON" Version="5.4.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ReaLTaiizor" Version="3.8.1.3" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.9" />

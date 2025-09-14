@@ -878,14 +878,14 @@ public abstract class SandboxieWrapper
 
             if (!serviceExists.Result) return new SB_RESULT<bool>(SB_STATUS.SB_OK, true, true);
 
-            var stopSbieService = StopSbieService();
-            if (!stopSbieService.Result)
-            {
-                var removeSbieServiceResult = new SB_RESULT<bool>(SB_STATUS.SB_REMOVE_SERVICE_ERROR, false, false, "Error while removing service because it can't be stopped");
-                removeSbieServiceResult.AddErrorsStatuses(stopSbieService.ErrorsList);
-                return removeSbieServiceResult;
-            }
-            ;
+            //var stopSbieService = StopSbieService();
+            //if (!stopSbieService.Result)
+            //{
+                //var removeSbieServiceResult = new SB_RESULT<bool>(SB_STATUS.SB_REMOVE_SERVICE_ERROR, false, false, "Error while removing service because it can't be stopped");
+                //removeSbieServiceResult.AddErrorsStatuses(stopSbieService.ErrorsList);
+                //return removeSbieServiceResult;
+            //}
+            //;
 
             var deleteResult = Exec($"delete {SbieService.Name}");
 
@@ -903,54 +903,6 @@ public abstract class SandboxieWrapper
                 new SB_RESULT<bool>(SB_STATUS.SB_REMOVE_SERVICE_ERROR, false, false, "Error while removing service because of unknown error");
         }
 
-        /// <summary>
-        /// Tries to stop <see cref="SbieService"/>.
-        /// </summary>
-        /// <param name="retry"> Enables or disables service stopping retries (disabled by default). </param>
-        /// <returns> Returns <see cref="SB_RESULT{T}"/> where type of data is <see cref="bool"/>. Value is True on success or False on error. </returns>
-        public static SB_RESULT<bool> StopSbieService(bool retry = false)
-        {
-            var isSbieExists = IsSbieExists();
-            var isServiceExists = IsServiceExists();
-
-            if (!isSbieExists.Result) return new SB_RESULT<bool>(SB_STATUS.SB_KMDUTIL_STOP_SERVICE_ERROR, false, false, "Error while stopping service because sandboxie path not exists");
-            else if (!isServiceExists.Result)
-            {
-                var stopSbieServiceResult = new SB_RESULT<bool>(SB_STATUS.SB_KMDUTIL_STOP_SERVICE_NOT_EXISTS, false, false, "Error while stopping service because it is not exists or already stopped");
-                stopSbieServiceResult.AddErrorsStatuses(isServiceExists.ErrorsList);
-                return stopSbieServiceResult;
-            }
-
-            var stopExecResult = Exec($"stop {SbieService.Name}");
-            if (!stopExecResult.Result)
-            {
-                var stopSbieServiceResult = new SB_RESULT<bool>(SB_STATUS.SB_KMDUTIL_STOP_SERVICE_EXEC_ERROR, false, false, "Error while stopping service because of command execute error");
-                stopSbieServiceResult.AddErrorsStatuses(stopExecResult.ErrorsList);
-                return stopSbieServiceResult;
-            }
-
-            int retries = retry ? 3 : 1;
-
-            for (var indexer = 0; indexer < retries; indexer++)
-            {
-                try
-                {
-                    var sbieService = new ServiceController(Sandboxie.SbieService.Name);
-                    sbieService.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(15));
-                    if (sbieService.Status is ServiceControllerStatus.Stopped)
-                        return new SB_RESULT<bool>(SB_STATUS.SB_OK, true, true);
-                }
-                catch
-                {
-                    // ignored
-                }
-
-                if (indexer + 1 == retries)
-                    return new SB_RESULT<bool>(SB_STATUS.SB_KMDUTIL_STOP_SERVICE_ERROR, false, false, $"Service was not stopped {(retry ? $"after {retries} retries" : "")}");
-            }
-
-            return new SB_RESULT<bool>(SB_STATUS.SB_KMDUTIL_STOP_SERVICE_ERROR, false, false, "Service was not stopped successfully due to unknown error");
-        }
 
         /// <summary>
         /// Tries to install <see cref="SbieDriver"/>.

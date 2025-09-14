@@ -1,17 +1,19 @@
-﻿using GPlus_V2_Redesign.Game.Clients;
-using GPlus_V2_Redesign.Source.Network;
+﻿using CoreRCON;
+using GPlus_V2_Redesign.Game.Clients;
 
 namespace GPlus_V2_Redesign.Source.Sandboxie
 {
     internal class Sandboxie
     {
-        public RCON _rconConnection;
+        public RCON? _rconConnection;
         public string _sandboxName;
         public Client _client;
-        public Sandboxie(string sBoxName, RCON Connection)
+        public Sandboxie(LoginDetails loginDetails)
         {
-            _sandboxName = sBoxName;
-            _rconConnection = Connection;
+            _sandboxName = loginDetails.CleanedUsername;
+
+            // Create a client for this sandbox
+            _client = new Client(loginDetails, this);
         }
     }
 }

@@ -11,4 +11,4 @@ def sendcommand(command):
         response = client.run(command)
         print(response)
 
-sendcommand("status")
+sendcommand("+jump")

@@ -17,6 +17,7 @@ namespace GPlus_V2_Redesign.Source
             public string? GMODExecutable { get; set; } = null;
             public string? SandboxieBoxCreator { get; set; } = null;
             public string? GMODLaunchArguments { get; set; } = null;
+            public string? RCONPassword { get; set; } = null;
         }
 
         public class SandboxieBoxCreation
@@ -47,14 +48,15 @@ namespace GPlus_V2_Redesign.Source
                 {
                     SandboxiePath = @"C:\Program Files\Sandboxie-Plus\",
                     SteamPath = @"C:\Program Files (x86)\Steam\steam.exe",
-                    GMODDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\GarrysMod",
+                    GMODDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\GarrysMod\",
                     GMODExecutable = "hl2.exe",
                     SandboxieBoxCreator = @"C:\Program Files\Sandboxie-Plus\SbieIni.exe",
                     GMODLaunchArguments =
                         "-console -novid -nohltv -nosteamcontroller -nosound -nojoy -noipx " +
                         "-noshaderapi -particles 1 -nopix -nopreload -nod3d9ex -low -textmode " +
                         "-heapsize 262144 -disallowhwmorph -high -reflectionTextureSize 0 " +
-                        "-soft -softparticlesdefaultoff"
+                        "-soft -softparticlesdefaultoff",
+                    RCONPassword = "changeme"
                 },
                 BoxCreation = new Settings.SandboxieBoxCreation
                 {
