@@ -6,6 +6,7 @@ using GPlus_V2_Redesign.Source.Sandboxie;
 using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
+using System.Management;
 
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
 #pragma warning disable CS8601 // Possible null reference assignment.
@@ -61,21 +62,166 @@ namespace GPlus_V2_Redesign.Game.Clients
             return status;
         }
 
-        public bool InitialiseSteam()
+        private static IEnumerable<Process> GetChildProcessesRecursive(Process parent)
         {
-            SandboxieWrapper.SB_RESULT<Process> ProcessResult = SandboxieWrapper.RunBoxed(
-                $"{SettingsManager.CurrentSettings.General.SteamPath} " +
-                $"-login" +
-                $" {LoginDetails.Username}" +
-                $" {LoginDetails.Password}",
-                $"{Enviroment._sandboxName}"
-            );
-            if (ProcessResult.Data == null)
-                return false;
-            Steam = ProcessResult.Data;
-            OnSteamStarted?.Invoke(this, EventArgs.Empty);
-            return true;
+            var children = new List<Process>();
+
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(
+                    $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = {parent.Id}"))
+                {
+                    foreach (var @object in searcher.Get())
+                    {
+                        int pid = Convert.ToInt32(@object["ProcessId"]);
+                        try
+                        {
+                            var child = Process.GetProcessById(pid);
+                            children.Add(child);
+
+                            children.AddRange(GetChildProcessesRecursive(child));
+                        }
+                        catch
+                        {
+                           
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                
+            }
+
+            return children;
         }
+
+
+
+        private static string GetCommandLine(Process process)
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(
+                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"))
+                {
+                    foreach (var @object in searcher.Get())
+                    {
+                        return @object["CommandLine"]?.ToString() ?? string.Empty;
+                    }
+                }
+            }
+            catch
+            {
+                // Fallback if WMI access fails
+            }
+
+            return string.Empty;
+        }
+
+
+        private async Task<bool> WaitForSteamLoginAsync(Process steam)
+        {
+#if DEBUG
+            Debug.WriteLine($"[Client] Waiting for Steam login for {LoginDetails.Username} (PID {steam.Id})...");
+#endif
+
+            while (!steam.HasExited)
+            {
+                try
+                {
+                    foreach (var child in GetChildProcessesRecursive(steam))
+                    {
+#if DEBUG
+                        Debug.WriteLine($"[Client] Checking process: {child.ProcessName} (PID {child.Id})");
+#endif
+
+                        if (child.ProcessName.Equals("steamwebhelper", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string cmdLine = GetCommandLine(child);
+#if DEBUG
+                            Debug.WriteLine($"[Client] steamwebhelper args: {cmdLine}");
+#endif
+
+                            if (cmdLine.Contains("--steamid=") && !cmdLine.Contains("--steamid=0"))
+                            {
+#if DEBUG
+                                Debug.WriteLine($"[Client] Steam login confirmed for {LoginDetails.Username} (SteamID detected).");
+#endif
+                                return true;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] Error while scanning child processes: {ex.Message}");
+#endif
+                }
+
+                await Task.Delay(1000);
+            }
+
+#if DEBUG
+            Debug.WriteLine($"[Client] Steam exited before login for {LoginDetails.Username}");
+#endif
+            return false;
+        }
+
+
+
+        public async Task<bool> InitialiseSteamAsync()
+        {
+            try
+            {
+                Debug.WriteLine($"[Client] Launching Steam for {LoginDetails.Username}...");
+
+                var processResult = SandboxieWrapper.RunBoxed(
+                    SettingsManager.CurrentSettings.General.SteamPath,
+                    $"-login {LoginDetails.Username} {LoginDetails.Password}",
+                    Enviroment._sandboxName
+                );
+
+                if (processResult.Data == null)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] Failed to start Steam process for {LoginDetails.Username}");
+#endif
+                    return false;
+                }
+
+                Steam = processResult.Data;
+#if DEBUG
+                Debug.WriteLine($"[Client] Steam launched with PID {Steam.Id} for {LoginDetails.Username}");
+#endif
+
+                bool loggedIn = await WaitForSteamLoginAsync(Steam);
+
+                if (!loggedIn)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] Steam login failed or exited for {LoginDetails.Username}");
+#endif
+                    return false;
+                }
+
+                IsSteamOpen = true;
+#if DEBUG
+                Debug.WriteLine($"[Client] Steam is fully logged in for {LoginDetails.Username}");
+#endif
+
+                OnSteamStarted?.Invoke(this, EventArgs.Empty);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[Client] Exception while starting Steam for {LoginDetails.Username}: {ex}");
+                return false;
+            }
+        }
+
+
 
         public void StopSteam()
         {
@@ -85,22 +231,38 @@ namespace GPlus_V2_Redesign.Game.Clients
             Steam.Dispose();
         }
 
-        public bool InitialiseGMOD()
+        public async Task<bool> InitialiseGMODAsync()
         {
-            if(Steam == null)
+            if (!IsSteamOpen)
+            {
+#if DEBUG
+                Debug.WriteLine("[Client] Waiting for Steam to start...");
+#endif
+                while (!IsSteamOpen)
+                    await Task.Delay(500);
+            }
+
+            var processResult = SandboxieWrapper.RunBoxed(
+                Path.Combine(
+                    SettingsManager.CurrentSettings.General.GMODDirectory,
+                    SettingsManager.CurrentSettings.General.GMODExecutable
+                ),
+                SettingsManager.CurrentSettings.General.GMODLaunchArguments,
+                Enviroment._sandboxName
+            );
+
+            if (processResult.Data == null)
                 return false;
 
-            SandboxieWrapper.SB_RESULT<Process> ProcessResult = SandboxieWrapper.RunBoxed(
-                $"{SettingsManager.CurrentSettings.General.GMODDirectory}\\" +
-                $"{SettingsManager.CurrentSettings.General.GMODExecutable} " +
-                $"-{SettingsManager.CurrentSettings.General.GMODLaunchArguments}"
-            );
-            if (ProcessResult.Data == null)
-                return false;
-            GMOD = ProcessResult.Data;
+            GMOD = processResult.Data;
+            IsGMODOpen = true;
             OnGMODStarted?.Invoke(this, EventArgs.Empty);
+#if DEBUG
+            Debug.WriteLine($"[Client] GMOD started for {LoginDetails.Username} with PID {GMOD.Id}");
+#endif
             return true;
         }
+
 
         public void StopGMOD()
         {
@@ -116,13 +278,24 @@ namespace GPlus_V2_Redesign.Game.Clients
 
         private async Task ClientLoop()
         {
-            while(true)
+            Debug.WriteLine($"[Client] Starting client loop for {LoginDetails.Username}");
+            while (true)
             {
                 if(Steam == null)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] Steam process is null, exiting client loop for {LoginDetails.Username}");
+#endif
                     break;
+                }
                 
                 if(GMOD == null)
+                {
+#if DEBUG
+                    Debug.WriteLine($"[Client] GMOD process is null, exiting client loop for {LoginDetails.Username}");
+#endif
                     break;
+                }
 
                 while(RCON == null)
                 {
@@ -159,10 +332,23 @@ namespace GPlus_V2_Redesign.Game.Clients
             Enviroment = enviroment;
             ConnectedServer = null;
 
-            InitialiseSteam();
-            InitialiseGMOD();
-            InitialiseClientLoop();
+#if DEBUG
+            Debug.WriteLine($"[Client] Creating client for {loginDetails.Username}");
+#endif
+            Task.Run(async () =>
+            {
+                bool steamStarted = await InitialiseSteamAsync();
+                if (!steamStarted)
+                    return;
+
+                bool gmodStarted = await InitialiseGMODAsync();
+                if (!gmodStarted)
+                    return;
+
+                InitialiseClientLoop();
+            });
         }
+
 
         ~Client()
         {
