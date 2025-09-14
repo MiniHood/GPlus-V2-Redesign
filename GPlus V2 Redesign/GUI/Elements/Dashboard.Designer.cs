@@ -34,6 +34,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(26, 26, 26);
             Name = "Dashboard";
             Size = new Size(599, 427);
             ResumeLayout(false);
