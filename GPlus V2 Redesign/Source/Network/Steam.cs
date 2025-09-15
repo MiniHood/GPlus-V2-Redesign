@@ -14,7 +14,7 @@ namespace GPlus.Source.Network
                              .GetProperty("response")
                              .GetProperty("players");
 
-            if (players.GetArrayLength() == 0) return null; 
+            if (players.GetArrayLength() == 0) return null;
             return players[0].GetProperty("personaname").GetString();
         }
     }

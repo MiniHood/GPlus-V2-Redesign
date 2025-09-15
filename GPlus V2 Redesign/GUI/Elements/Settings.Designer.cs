@@ -37,6 +37,7 @@
             BackColor = Color.FromArgb(26, 26, 26);
             Name = "Settings";
             Size = new Size(599, 427);
+            Load += Settings_Load;
             ResumeLayout(false);
         }
 

@@ -34,6 +34,7 @@
             _ucDashboard = new GPlus.GUI.Elements.Dashboard();
             _ucServers = new GPlus.GUI.Elements.Servers();
             _ucSettings = new GPlus.GUI.Elements.Settings();
+            setup1 = new GPlus.GUI.Elements.Setup();
             SuspendLayout();
             // 
             // _ctrlControlBox
@@ -100,12 +101,21 @@
             _ucSettings.TabIndex = 7;
             _ucSettings.Load += _ucSettings_Load;
             // 
+            // setup1
+            // 
+            setup1.BackColor = Color.FromArgb(26, 26, 26);
+            setup1.Location = new Point(0, 0);
+            setup1.Name = "setup1";
+            setup1.Size = new Size(752, 464);
+            setup1.TabIndex = 8;
+            // 
             // Home
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
             ClientSize = new Size(752, 464);
+            Controls.Add(setup1);
             Controls.Add(_ucSettings);
             Controls.Add(_ucServers);
             Controls.Add(_ucDashboard);
@@ -116,7 +126,7 @@
             MaximumSize = new Size(1920, 1032);
             Name = "Home";
             StartPosition = FormStartPosition.CenterScreen;
-            Text = "Form1";
+            Text = "GPlusV2";
             TransparencyKey = Color.Fuchsia;
             Load += Home_Load;
             ResumeLayout(false);
@@ -130,5 +140,7 @@
         private GUI.Elements.Dashboard _ucDashboard;
         private GUI.Elements.Servers _ucServers;
         private GUI.Elements.Settings _ucSettings;
+        private GUI.Elements.Setup _ucSetup;
+        private GUI.Elements.Setup setup1;
     }
 }

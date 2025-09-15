@@ -1,16 +1,4 @@
-﻿using GPlus.GUI.Helpers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace GPlus.GUI.Elements
+﻿namespace GPlus.GUI.Elements
 {
     public partial class Clients : UserControl
     {
@@ -52,6 +40,7 @@ namespace GPlus.GUI.Elements
 
         private void Clients_Load(object sender, EventArgs e)
         {
+            if (DesignMode) return;
             RefreshClientList();
         }
 

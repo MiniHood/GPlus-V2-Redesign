@@ -1,15 +1,5 @@
-﻿using GPlus.Game.Clients;
-using GPlus.GUI.Helpers;
-using GPlus.Source.Sandboxie;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using GPlus.Source.Sandboxie;
+using GPlus.Source.Structs;
 
 namespace GPlus.GUI.Elements
 {
@@ -25,7 +15,7 @@ namespace GPlus.GUI.Elements
             SendToBack();
             Hide();
 
-            SandboxieManager.CreateNewSandbox(new Source.LoginDetails { Username = _txtUsername.Text, Password = _txtPassword.Text });
+            SandboxieManager.CreateNewSandbox(new LoginDetails { Username = _txtUsername.Text, Password = _txtPassword.Text });
 
             _txtPassword.Text = "Password";
             _txtUsername.Text = "Username";

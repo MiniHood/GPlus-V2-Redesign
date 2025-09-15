@@ -37,6 +37,7 @@
             BackColor = Color.FromArgb(26, 26, 26);
             Name = "Servers";
             Size = new Size(599, 427);
+            Load += Servers_Load;
             ResumeLayout(false);
         }
 

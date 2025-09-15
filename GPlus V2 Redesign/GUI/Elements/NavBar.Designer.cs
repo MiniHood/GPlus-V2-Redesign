@@ -60,8 +60,8 @@
             _btnSettings.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnSettings.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnSettings.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            _btnSettings.Image = null;
-            _btnSettings.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnSettings.Image = Properties.Resources.setting;
+            _btnSettings.ImageAlign = ContentAlignment.MiddleCenter;
             _btnSettings.InactiveColor = Color.FromArgb(32, 34, 37);
             _btnSettings.Location = new Point(0, 348);
             _btnSettings.Name = "_btnSettings";
@@ -69,7 +69,6 @@
             _btnSettings.PressedColor = Color.FromArgb(36, 36, 36);
             _btnSettings.Size = new Size(157, 116);
             _btnSettings.TabIndex = 8;
-            _btnSettings.Text = "Settings";
             _btnSettings.TextAlignment = StringAlignment.Center;
             _btnSettings.Click += _btnSettings_Click;
             // 
@@ -81,8 +80,8 @@
             _btnClients.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnClients.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnClients.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            _btnClients.Image = null;
-            _btnClients.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnClients.Image = Properties.Resources.Users;
+            _btnClients.ImageAlign = ContentAlignment.MiddleCenter;
             _btnClients.InactiveColor = Color.FromArgb(32, 34, 37);
             _btnClients.Location = new Point(0, 232);
             _btnClients.Name = "_btnClients";
@@ -90,7 +89,6 @@
             _btnClients.PressedColor = Color.FromArgb(36, 36, 36);
             _btnClients.Size = new Size(157, 116);
             _btnClients.TabIndex = 7;
-            _btnClients.Text = "Clients";
             _btnClients.TextAlignment = StringAlignment.Center;
             _btnClients.Click += _btnClients_Click;
             // 
@@ -102,8 +100,8 @@
             _btnServers.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnServers.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnServers.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            _btnServers.Image = null;
-            _btnServers.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnServers.Image = Properties.Resources.Servers;
+            _btnServers.ImageAlign = ContentAlignment.MiddleCenter;
             _btnServers.InactiveColor = Color.FromArgb(32, 34, 37);
             _btnServers.Location = new Point(0, 116);
             _btnServers.Name = "_btnServers";
@@ -111,7 +109,6 @@
             _btnServers.PressedColor = Color.FromArgb(36, 36, 36);
             _btnServers.Size = new Size(157, 116);
             _btnServers.TabIndex = 6;
-            _btnServers.Text = "Servers";
             _btnServers.TextAlignment = StringAlignment.Center;
             _btnServers.Click += _btnServers_Click;
             // 
@@ -123,8 +120,8 @@
             _btnDashboard.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnDashboard.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnDashboard.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            _btnDashboard.Image = null;
-            _btnDashboard.ImageAlign = ContentAlignment.MiddleLeft;
+            _btnDashboard.Image = Properties.Resources.Dashboard;
+            _btnDashboard.ImageAlign = ContentAlignment.MiddleCenter;
             _btnDashboard.InactiveColor = Color.FromArgb(32, 34, 37);
             _btnDashboard.Location = new Point(0, 0);
             _btnDashboard.Name = "_btnDashboard";
@@ -132,7 +129,6 @@
             _btnDashboard.PressedColor = Color.FromArgb(36, 36, 36);
             _btnDashboard.Size = new Size(157, 116);
             _btnDashboard.TabIndex = 5;
-            _btnDashboard.Text = "Dashboard";
             _btnDashboard.TextAlignment = StringAlignment.Center;
             _btnDashboard.Click += _btnDashboard_Click;
             // 

@@ -1,5 +1,4 @@
-﻿using GPlus.GUI;
-using GPlus.GUI.Helpers;
+﻿using GPlus.GUI.Helpers;
 using GPlus.Source.Interprocess;
 using GPlus.Source.Network;
 using GPlus.Source.Sandboxie;
@@ -14,10 +13,10 @@ namespace GPlus.Game.Clients
     internal static class ClientManager
     {
         private static List<Client> _clients = new List<Client>();
-        
+
         public static async void InitializingClientManager()
         {
-            await Task.Run(async () => { while (true) { ScanSyncOpenGMOD(); await Task.Delay(500); } } );
+            await Task.Run(async () => { while (true) { ScanSyncOpenGMOD(); await Task.Delay(500); } });
         }
 
         private static void RegisterClient(Client client)
@@ -72,7 +71,7 @@ namespace GPlus.Game.Clients
 
             ConnectedClient.SetGMOD(ProcessID);
         }
-        
+
 
         private static void ScanSyncOpenGMOD()
         {
@@ -83,7 +82,8 @@ namespace GPlus.Game.Clients
             if (Procs.Length == 0)
                 return;
 
-            foreach (var proc in Procs) { 
+            foreach (var proc in Procs)
+            {
                 try
                 {
                     if (Memory.IsModuleLoaded(proc.Id, "Communication.dll"))
@@ -98,7 +98,8 @@ namespace GPlus.Game.Clients
                     Debug.WriteLine($"[Client] Loading communication DLL into {proc.Id}");
 
                     Memory.InjectDLL(proc.Id, Application.StartupPath + "\\Resources\\Communication.dll");
-                } catch { }
+                }
+                catch { }
             }
         }
 

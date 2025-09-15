@@ -37,6 +37,7 @@
             BackColor = Color.FromArgb(26, 26, 26);
             Name = "Dashboard";
             Size = new Size(599, 427);
+            Load += Dashboard_Load;
             ResumeLayout(false);
         }
 

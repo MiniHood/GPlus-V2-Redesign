@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GPlus.Game.Servers
+﻿namespace GPlus.Game.Servers
 {
     internal class Server
     {
