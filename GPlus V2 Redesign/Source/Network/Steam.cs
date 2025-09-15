@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-namespace GPlus_V2_Redesign.Source
+namespace GPlus.Source.Network
 {
     public static class Steam
     {

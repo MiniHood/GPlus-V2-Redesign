@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.ServiceProcess;
 using System.Text;
-using GPlus_V2_Redesign.Source;
+using GPlus.Source;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 

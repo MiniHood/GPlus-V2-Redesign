@@ -3,11 +3,11 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <RootNamespace>GPlus_V2_Redesign</RootNamespace>
+    <RootNamespace>GPlus</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <StartupObject>GPlus_V2_Redesign.Program</StartupObject>
+    <StartupObject>GPlus.Program</StartupObject>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Source\Helpers\" />
+    <Folder Include="Source\Enums\" />
   </ItemGroup>
 
   <ItemGroup>

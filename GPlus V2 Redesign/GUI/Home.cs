@@ -1,12 +1,13 @@
-using GPlus_V2_Redesign.GUI.Helpers;
-using GPlus_V2_Redesign.Source;
+using GPlus.GUI.Helpers;
+using GPlus.Source;
+using GPlus.Source.Interprocess;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
-using static GPlus_V2_Redesign.Source.Memory;
+using static GPlus.Source.Interprocess.Memory;
 
-namespace GPlus_V2_Redesign
+namespace GPlus
 {
     public partial class Home : Form
     {
@@ -21,7 +22,7 @@ namespace GPlus_V2_Redesign
             const int WM_COPYDATA = 0x4A;
             if (m.Msg == WM_COPYDATA)
             {
-                CommunicationManager.ParseCommunication(m);
+                Communication.ParseCommunication(m);
             }
             base.WndProc(ref m);
         }

@@ -1,4 +1,4 @@
-﻿using GPlus_V2_Redesign.GUI.Elements;
+﻿using GPlus.GUI.Elements;
 using System;
 using System.Collections.Generic;
 using System.DirectoryServices;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPlus_V2_Redesign.GUI.Helpers
+namespace GPlus.GUI.Helpers
 {
     internal static class UserControlLoader
     {

@@ -1,4 +1,4 @@
-﻿namespace GPlus_V2_Redesign
+﻿namespace GPlus
 {
     partial class Home
     {
@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             _ctrlControlBox = new ReaLTaiizor.Controls.NightControlBox();
-            _ucNavBar = new GPlus_V2_Redesign.GUI.Elements.NavBar();
-            _ucClients = new GPlus_V2_Redesign.GUI.Elements.Clients();
-            _ucDashboard = new GPlus_V2_Redesign.GUI.Elements.Dashboard();
-            _ucServers = new GPlus_V2_Redesign.GUI.Elements.Servers();
-            _ucSettings = new GPlus_V2_Redesign.GUI.Elements.Settings();
+            _ucNavBar = new GPlus.GUI.Elements.NavBar();
+            _ucClients = new GPlus.GUI.Elements.Clients();
+            _ucDashboard = new GPlus.GUI.Elements.Dashboard();
+            _ucServers = new GPlus.GUI.Elements.Servers();
+            _ucSettings = new GPlus.GUI.Elements.Settings();
             SuspendLayout();
             // 
             // _ctrlControlBox

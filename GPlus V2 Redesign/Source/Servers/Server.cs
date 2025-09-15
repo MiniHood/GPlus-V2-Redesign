@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GPlus_V2_Redesign.Game.Servers
+namespace GPlus.Game.Servers
 {
     internal class Server
     {

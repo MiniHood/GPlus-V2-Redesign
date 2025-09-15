@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace GPlus_V2_Redesign.Source
+namespace GPlus.Source
 {
     public class Settings
     {

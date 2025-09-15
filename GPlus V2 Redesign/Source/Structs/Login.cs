@@ -1,4 +1,4 @@
-﻿namespace GPlus_V2_Redesign.Source
+﻿namespace GPlus.Source.Structs
 {
     struct LoginDetails
     {

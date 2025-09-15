@@ -1,13 +1,15 @@
-﻿using GPlus_V2_Redesign.GUI;
-using GPlus_V2_Redesign.GUI.Helpers;
-using GPlus_V2_Redesign.Source;
-using GPlus_V2_Redesign.Source.Sandboxie;
+﻿using GPlus.GUI;
+using GPlus.GUI.Helpers;
+using GPlus.Source.Interprocess;
+using GPlus.Source.Network;
+using GPlus.Source.Sandboxie;
+using GPlus.Source.Structs;
 using System.Diagnostics;
-using static GPlus_V2_Redesign.Source.Memory;
+using static GPlus.Source.Interprocess.Memory;
 
 #pragma warning disable CS8603 // Possible null reference return.
 
-namespace GPlus_V2_Redesign.Game.Clients
+namespace GPlus.Game.Clients
 {
     internal static class ClientManager
     {
@@ -44,17 +46,17 @@ namespace GPlus_V2_Redesign.Game.Clients
             ulong SteamID64 = msg.steamID;
             uint ProcessID = msg.processID;
 
-#if DEBUG
+
             Debug.WriteLine($"[Client] Attempting to sync {SteamID64} with {ProcessID}");
-#endif
+
 
             // Let's get the username of the player and match it
             string? Username = await Steam.GetSteamUsernameAsync(SteamID64.ToString());
             if (Username == null)
             {
-#if DEBUG
+
                 Debug.WriteLine($"[Client] Failed to get username.");
-#endif
+
                 return;
             }
 
@@ -62,9 +64,9 @@ namespace GPlus_V2_Redesign.Game.Clients
 
             if (ConnectedClient == null) // This account has nothing to do with us
             {
-#if DEBUG
+
                 Debug.WriteLine($"[Client] Failed to get client by username.");
-#endif
+
                 return;
             }
 
@@ -86,15 +88,15 @@ namespace GPlus_V2_Redesign.Game.Clients
                 {
                     if (Memory.IsModuleLoaded(proc.Id, "Communication.dll"))
                     {
-#if DEBUG
+
                         Debug.WriteLine($"[Client] Module already loaded in {proc.Id}, skipping.");
-#endif
+
                         return;
                     }
 
-#if DEBUG
+
                     Debug.WriteLine($"[Client] Loading communication DLL into {proc.Id}");
-#endif
+
                     Memory.InjectDLL(proc.Id, Application.StartupPath + "\\Resources\\Communication.dll");
                 } catch { }
             }

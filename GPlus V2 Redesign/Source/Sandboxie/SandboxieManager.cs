@@ -1,7 +1,8 @@
-﻿using GPlus_V2_Redesign.GUI.Elements;
+﻿using GPlus.GUI.Elements;
+using GPlus.Source.Structs;
 using System.Diagnostics;
 
-namespace GPlus_V2_Redesign.Source.Sandboxie
+namespace GPlus.Source.Sandboxie
 {
     internal class SandboxieManager
     {

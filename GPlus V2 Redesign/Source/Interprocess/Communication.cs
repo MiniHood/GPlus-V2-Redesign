@@ -1,15 +1,15 @@
-﻿using GPlus_V2_Redesign.Game.Clients;
+﻿using GPlus.Game.Clients;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using static GPlus_V2_Redesign.Source.Memory;
+using static GPlus.Source.Interprocess.Memory;
 
-namespace GPlus_V2_Redesign.Source
+namespace GPlus.Source.Interprocess
 {
-    internal static class CommunicationManager
+    internal static class Communication
     {
         public static void ParseCommunication(Message m)
         {

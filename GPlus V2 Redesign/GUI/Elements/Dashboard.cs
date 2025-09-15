@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GPlus_V2_Redesign.GUI.Elements
+namespace GPlus.GUI.Elements
 {
     public partial class Dashboard : UserControl
     {

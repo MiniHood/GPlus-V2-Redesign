@@ -1,4 +1,4 @@
-namespace GPlus_V2_Redesign
+namespace GPlus
 {
     internal static class Program
     {

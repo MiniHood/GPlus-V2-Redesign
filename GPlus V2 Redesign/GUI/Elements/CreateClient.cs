@@ -1,6 +1,6 @@
-﻿using GPlus_V2_Redesign.Game.Clients;
-using GPlus_V2_Redesign.GUI.Helpers;
-using GPlus_V2_Redesign.Source.Sandboxie;
+﻿using GPlus.Game.Clients;
+using GPlus.GUI.Helpers;
+using GPlus.Source.Sandboxie;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace GPlus_V2_Redesign.GUI.Elements
+namespace GPlus.GUI.Elements
 {
     public partial class CreateClient : UserControl
     {

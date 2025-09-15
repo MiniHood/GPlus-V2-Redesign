@@ -1,7 +1,8 @@
 ﻿using CoreRCON;
-using GPlus_V2_Redesign.Game.Clients;
+using GPlus.Game.Clients;
+using GPlus.Source.Structs;
 
-namespace GPlus_V2_Redesign.Source.Sandboxie
+namespace GPlus.Source.Sandboxie
 {
     internal class Sandboxie
     {

@@ -1,4 +1,4 @@
-﻿namespace GPlus_V2_Redesign.GUI.Elements
+﻿namespace GPlus.GUI.Elements
 {
     partial class CreateClient
     {
