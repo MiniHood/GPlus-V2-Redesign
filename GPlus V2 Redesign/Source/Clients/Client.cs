@@ -10,6 +10,7 @@ using System.Net;
 
 #pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
 #pragma warning disable CS8601 // Possible null reference assignment.
+#pragma warning disable CS8604 // Possible null reference argument.
 
 namespace GPlus.Game.Clients
 {
@@ -228,13 +229,13 @@ namespace GPlus.Game.Clients
 			{
 				Debug.WriteLine($"[Client] Launching Steam for {LoginDetails.Username}...");
 
-				var processResult = SandboxieWrapper.RunBoxed(
+                var processResult = SandboxieWrapper.RunBoxed(
 					SettingsManager.CurrentSettings.General.SteamPath,
 					$"-login {LoginDetails.Username} {LoginDetails.Password}",
 					Enviroment._sandboxName
 				);
 
-				if (processResult.Data == null)
+                if (processResult.Data == null)
 				{
 					Debug.WriteLine(
 						$"[Client] Failed to start Steam process for {LoginDetails.Username}"
