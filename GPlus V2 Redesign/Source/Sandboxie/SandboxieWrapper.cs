@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using GPlus.Source;
+using Microsoft.Win32;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using System.Reflection;
@@ -6,9 +9,6 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.ServiceProcess;
 using System.Text;
-using GPlus.Source;
-using Microsoft.Win32;
-using Newtonsoft.Json.Linq;
 
 // All credit to saykowa for this amazing Sandboxie wrapper.
 // https://github.com/saykowa | https://github.com/saykowa/SandboxieAPI
@@ -889,9 +889,9 @@ public abstract class SandboxieWrapper
             //var stopSbieService = StopSbieService();
             //if (!stopSbieService.Result)
             //{
-                //var removeSbieServiceResult = new SB_RESULT<bool>(SB_STATUS.SB_REMOVE_SERVICE_ERROR, false, false, "Error while removing service because it can't be stopped");
-                //removeSbieServiceResult.AddErrorsStatuses(stopSbieService.ErrorsList);
-                //return removeSbieServiceResult;
+            //var removeSbieServiceResult = new SB_RESULT<bool>(SB_STATUS.SB_REMOVE_SERVICE_ERROR, false, false, "Error while removing service because it can't be stopped");
+            //removeSbieServiceResult.AddErrorsStatuses(stopSbieService.ErrorsList);
+            //return removeSbieServiceResult;
             //}
             //;
 

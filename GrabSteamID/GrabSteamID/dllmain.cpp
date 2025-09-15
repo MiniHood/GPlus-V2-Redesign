@@ -30,7 +30,7 @@ void SendSteamIDToCSharp(HWND hwnd, uint64_t steamID, uint32_t pid)
 
 HWND GetCSharpHWND()
 {
-    return FindWindowA(nullptr, "Form1");
+    return FindWindowA(nullptr, "GPlusV2");
 }
 
 BOOL APIENTRY DllMain(HMODULE hModule,
