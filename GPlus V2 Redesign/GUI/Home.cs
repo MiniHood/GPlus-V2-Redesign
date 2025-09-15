@@ -1,19 +1,18 @@
 using GPlus.GUI.Helpers;
 using GPlus.Source;
 using GPlus.Source.Interprocess;
-using System.Configuration;
-using System.Diagnostics;
-using System.IO.Pipes;
-using System.Runtime.InteropServices;
-using static GPlus.Source.Interprocess.Memory;
+using GPlus.Source.Steam;
 
 namespace GPlus
 {
     public partial class Home : Form
     {
+        public static Home Instance { get; private set; }
+
         public Home()
         {
             InitializeComponent();
+            Instance = this;
         }
 
 
@@ -27,10 +26,20 @@ namespace GPlus
             base.WndProc(ref m);
         }
 
+        public void InitializeUserControls()
+        {
+            UserControlLoader.InitializeUserControls(
+                Instance._ucDashboard,
+                Instance._ucClients,
+                Instance._ucServers,
+                Instance._ucSettings,
+                Instance._ucNavBar
+            ); // _ucSetup isn't needed.
+        }
+
         private void Home_Load(object sender, EventArgs e)
         {
-            SettingsManager.LoadSettings();
-            UserControlLoader.InitializeUserControls(_ucDashboard, _ucClients, _ucServers, _ucSettings, _ucNavBar);
+            if (DesignMode) return; // why microsoft... Why?
         }
 
         private void _ucSettings_Load(object sender, EventArgs e)
