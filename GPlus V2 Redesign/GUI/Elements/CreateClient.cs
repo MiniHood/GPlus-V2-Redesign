@@ -1,4 +1,4 @@
-﻿using GPlus.Source.Sandboxie;
+﻿using GPlus.Source.Sandboxing;
 using GPlus.Source.Structs;
 
 namespace GPlus.GUI.Elements
