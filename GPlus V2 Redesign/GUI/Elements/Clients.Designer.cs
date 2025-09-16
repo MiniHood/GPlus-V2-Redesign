@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            ListViewGroup listViewGroup2 = new ListViewGroup("Unconnected", HorizontalAlignment.Left);
-            ListViewItem listViewItem2 = new ListViewItem(new string[] { "Test" }, -1, Color.White, Color.FromArgb(32, 32, 32), null);
+            ListViewGroup listViewGroup1 = new ListViewGroup("Unconnected", HorizontalAlignment.Left);
+            ListViewItem listViewItem1 = new ListViewItem(new string[] { "Test" }, -1, Color.White, Color.FromArgb(32, 32, 32), null);
             _listClients = new ReaLTaiizor.Controls.PoisonListView();
             _listColumn = new ColumnHeader();
             _btnCreateClient = new ReaLTaiizor.Controls.ParrotButton();
@@ -45,12 +45,12 @@
             _listClients.Font = new Font("Segoe UI", 12F);
             _listClients.ForeColor = Color.White;
             _listClients.FullRowSelect = true;
-            listViewGroup2.Header = "Unconnected";
-            listViewGroup2.Name = "_listUnconnected";
-            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup2 });
+            listViewGroup1.Header = "Unconnected";
+            listViewGroup1.Name = "_listUnconnected";
+            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup1 });
             _listClients.HideSelection = true;
-            listViewItem2.Group = listViewGroup2;
-            _listClients.Items.AddRange(new ListViewItem[] { listViewItem2 });
+            listViewItem1.Group = listViewGroup1;
+            _listClients.Items.AddRange(new ListViewItem[] { listViewItem1 });
             _listClients.Location = new Point(451, 0);
             _listClients.Name = "_listClients";
             _listClients.OwnerDraw = true;
