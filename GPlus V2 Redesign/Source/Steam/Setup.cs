@@ -14,9 +14,20 @@ namespace GPlus.Source.Steam
         public static event EventHandler<int>? SteamCMDUpdateProgressChange;
         public static event EventHandler? OnSteamSetupCompleted;
 
+        public static bool IsSteamCMDRunning()
+        {
+            var processes = Process.GetProcessesByName("steamcmd");
+            return processes.Length > 0;
+        }
+
         public static bool IsSteamInstalled()
         {
             return System.IO.File.Exists("SteamCMD\\steamcmd.exe");
+        }
+
+        public static bool IsGMODInstalled()
+        {
+            return System.IO.Directory.Exists("SteamCMD\\GMOD\\");
         }
 
         public async static Task<bool> UnzipSteamClient()
@@ -104,10 +115,13 @@ namespace GPlus.Source.Steam
             if (!IsSteamInstalled())
                 return false;
 
+            if (IsSteamCMDRunning()) // if SteamCMD is already running, we'll get stuck in recovery loop
+                return false;
+
             var psi = new ProcessStartInfo
             {
-                FileName = "SteamCMD\\steamcmd.exe",
-                Arguments = "+login anonymous +exit +@sSteamCmdForcePlatformType windows",
+                FileName = SteamCMD.GetSteamCMDPath(),
+                Arguments = "+login anonymous +exit",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
@@ -121,13 +135,13 @@ namespace GPlus.Source.Steam
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    Debug.WriteLine($"[OUT] {e.Data}");
+                    Debug.WriteLine($"[OUT] [AllowSteamUpdate] {e.Data}");
 
                     var match = Regex.Match(e.Data, @"\[\s*(\d+)%\]");
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int progress))
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int progress) && progress != 0)
                     {
                         SteamCMDUpdateProgressChange?.Invoke(null, progress);
-                        Debug.WriteLine($"SteamCMD Update Progress: {progress}%");
+                        Debug.WriteLine($"[AllowSteamUpdate] SteamCMD Update Progress: {progress}%");
                     }
                 }
             };
@@ -136,14 +150,20 @@ namespace GPlus.Source.Steam
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
-                    Debug.WriteLine($"[ERR] {e.Data}");
+                    Debug.WriteLine($"[ERR] [AllowSteamUpdate] {e.Data}");
             };
 
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            await process.WaitForExitAsync();
+            await process.WaitForExitAsync().ContinueWith(t =>
+            {
+                process.CancelOutputRead();
+                process.CancelErrorRead();
+                process.Close();
+                OnSteamSetupCompleted?.Invoke(null, EventArgs.Empty);
+            });
 
             return true;
         }

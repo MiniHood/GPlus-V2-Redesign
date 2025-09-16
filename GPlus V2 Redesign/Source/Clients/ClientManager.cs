@@ -1,8 +1,9 @@
 ﻿using GPlus.GUI.Elements;
 using GPlus.GUI.Helpers;
+using GPlus.Source.Enums;
 using GPlus.Source.Interprocess;
 using GPlus.Source.Network;
-using GPlus.Source.Sandboxie;
+using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using System.Diagnostics;
@@ -18,7 +19,13 @@ namespace GPlus.Game.Clients
 
         private static async Task<bool> Check2FA(Client client)
         {
-            if (await SteamCMD.DoesClientHave2FA(client))
+            ClientResponse response = await SteamCMD.DoesClientHave2FA(
+                client.LoginDetails,
+                Sandboxed: true,
+                _sandbox: client.Enviroment
+            );
+
+            if (response == ClientResponse.AUTHENABLED)
             {
                 SandboxieManager.DeleteSandbox(client.Enviroment);
                 Debug.WriteLine($"[Client] Client {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
@@ -26,13 +33,13 @@ namespace GPlus.Game.Clients
             }
 
             return false;
-
         }
 
-        public static async void InitializingClientManager()
+
+        /*public static async void InitializingClientManager()
         {
             await Task.Run(async () => { while (true) { ScanSyncOpenGMOD(); await Task.Delay(500); } });
-        }
+        }*/
 
         private static void RegisterClient(Client client)
         {
@@ -46,10 +53,16 @@ namespace GPlus.Game.Clients
             _clients.Remove(client);
         }
 
-        public static async Task<Client> CreateClient(LoginDetails login, Sandboxie Enviroment)
+        public static Client CreateClient(LoginDetails login, Sandboxie Enviroment)
         {
+            bool Has2FA = false;
             Client client = new Client(login, Enviroment);
-            if (await Check2FA(client))
+            Task.Run(async () =>
+            {
+                if (await Check2FA(client))
+                    Has2FA = true;
+            });
+            if (Has2FA)
                 return null;
             RegisterClient(client);
             return client;
@@ -84,7 +97,7 @@ namespace GPlus.Game.Clients
         }
 
 
-        private static void ScanSyncOpenGMOD()
+        /*private static void ScanSyncOpenGMOD() // to be removed
         {
             // Okay this is weird, we're going to have to scan every open gmod process in all sandboxes, then check if the comms dll has been loaded, if not then it's not synced. and we sync it
             // communication is dealt with in Home.cs
@@ -112,7 +125,7 @@ namespace GPlus.Game.Clients
                 }
                 catch { }
             }
-        }
+        }*/
 
         public static List<Client> GetAllClients()
         {
