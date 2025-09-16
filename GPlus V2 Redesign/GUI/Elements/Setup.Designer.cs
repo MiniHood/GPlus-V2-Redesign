@@ -32,6 +32,7 @@
             _txtOneTime = new ReaLTaiizor.Controls.CrownLabel();
             _txtFeedback = new ReaLTaiizor.Controls.CrownLabel();
             _spinnerFeedback = new ReaLTaiizor.Controls.PoisonProgressSpinner();
+            _ucSetupAccount = new SetupAccount();
             SuspendLayout();
             // 
             // _progProgressBar
@@ -95,6 +96,14 @@
             _spinnerFeedback.Value = 60;
             _spinnerFeedback.Visible = false;
             // 
+            // _ucSetupAccount
+            // 
+            _ucSetupAccount.BackColor = Color.FromArgb(26, 26, 26);
+            _ucSetupAccount.Location = new Point(0, 0);
+            _ucSetupAccount.Name = "_ucSetupAccount";
+            _ucSetupAccount.Size = new Size(752, 464);
+            _ucSetupAccount.TabIndex = 4;
+            // 
             // Setup
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -104,6 +113,7 @@
             Controls.Add(_txtOneTime);
             Controls.Add(_progProgressBar);
             Controls.Add(_txtFeedback);
+            Controls.Add(_ucSetupAccount);
             Name = "Setup";
             Size = new Size(752, 464);
             Load += Setup_Load;
@@ -116,5 +126,6 @@
         private ReaLTaiizor.Controls.CrownLabel _txtOneTime;
         private ReaLTaiizor.Controls.CrownLabel _txtFeedback;
         private ReaLTaiizor.Controls.PoisonProgressSpinner _spinnerFeedback;
+        private SetupAccount _ucSetupAccount;
     }
 }
