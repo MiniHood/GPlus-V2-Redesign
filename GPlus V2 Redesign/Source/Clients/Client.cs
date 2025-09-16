@@ -346,7 +346,7 @@ namespace GPlus.Game.Clients
             Debug.WriteLine($"[Client] Subscribed too OnGMODStarted");
         }
 
-        ~Client()
+        public void Dispose()
         {
             Disconnect();
             RCON?.Dispose();

@@ -26,6 +26,32 @@ namespace GPlus.Source.Sandboxie
             Sandboxies.Append(sandboxie);
         }
 
+        private static void UnregisterSandbox(Sandboxie sandboxie)
+        {
+            Sandboxies.Remove(sandboxie);
+        }
+
+        public static void DeleteSandbox(Sandboxie sandboxie)
+        {
+            // Deleting a sandboxie is as simple as deleting the folder in C:\Sandbox\{sandboxname} and removing the entry from the ini file
+            // Sandboxie has an option to auto delete sandboxes on close, but this is not reliable so we'll do it ourselves
+            Settings CurrentSettings = SettingsManager.CurrentSettings;
+            if (CurrentSettings == null)
+                throw new Exception("Settings not loaded correctly.");
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = CurrentSettings.General.SandboxieBoxCreator,
+                Arguments = $"delete {sandboxie._sandboxName}",
+                UseShellExecute = false,
+                CreateNoWindow = false 
+            };
+            using (Process proc = Process.Start(startInfo))
+            {
+                proc.WaitForExit();
+            }
+            UnregisterSandbox(sandboxie);
+        }
+
         public static Sandboxie CreateNewSandbox(LoginDetails loginDetails)
         {
             // Null check rq

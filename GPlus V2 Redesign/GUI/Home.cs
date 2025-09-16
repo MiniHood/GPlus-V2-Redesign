@@ -7,14 +7,13 @@ namespace GPlus
 {
     public partial class Home : Form
     {
-        public static Home Instance { get; private set; }
+        public static Home? Instance { get; private set; }
 
         public Home()
         {
             InitializeComponent();
             Instance = this;
         }
-
 
         protected override void WndProc(ref Message m)
         {
@@ -26,25 +25,17 @@ namespace GPlus
             base.WndProc(ref m);
         }
 
-        public void InitializeUserControls()
-        {
-            UserControlLoader.InitializeUserControls(
-                Instance._ucDashboard,
-                Instance._ucClients,
-                Instance._ucServers,
-                Instance._ucSettings,
-                Instance._ucNavBar
-            ); // _ucSetup isn't needed.
-        }
-
         private void Home_Load(object sender, EventArgs e)
         {
             if (DesignMode) return; // why microsoft... Why?
-        }
-
-        private void _ucSettings_Load(object sender, EventArgs e)
-        {
-
+            SettingsManager.LoadSettings();
+            UserControlLoader.InitializeUserControls(
+                _ucDashboard,
+                _ucClients,
+                _ucServers,
+                _ucSettings,
+                _ucNavBar
+            ); // _ucSetup isn't needed.
         }
     }
 }

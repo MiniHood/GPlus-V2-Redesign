@@ -1,7 +1,9 @@
-﻿using GPlus.GUI.Helpers;
+﻿using GPlus.GUI.Elements;
+using GPlus.GUI.Helpers;
 using GPlus.Source.Interprocess;
 using GPlus.Source.Network;
 using GPlus.Source.Sandboxie;
+using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using System.Diagnostics;
 using static GPlus.Source.Interprocess.Memory;
@@ -13,6 +15,19 @@ namespace GPlus.Game.Clients
     internal static class ClientManager
     {
         private static List<Client> _clients = new List<Client>();
+
+        private static async Task<bool> Check2FA(Client client)
+        {
+            if (await SteamCMD.DoesClientHave2FA(client))
+            {
+                SandboxieManager.DeleteSandbox(client.Enviroment);
+                Debug.WriteLine($"[Client] Client {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
+                return true;
+            }
+
+            return false;
+
+        }
 
         public static async void InitializingClientManager()
         {
@@ -27,15 +42,15 @@ namespace GPlus.Game.Clients
 
         public static void UnregisterClient(Client client)
         {
-            client.StopGMOD();
-            client.StopSteam();
-            client.ConnectedServer = null;
+            client.Dispose();
             _clients.Remove(client);
         }
 
-        public static Client CreateClient(LoginDetails login, Sandboxie Enviroment)
+        public static async Task<Client> CreateClient(LoginDetails login, Sandboxie Enviroment)
         {
             Client client = new Client(login, Enviroment);
+            if (await Check2FA(client))
+                return null;
             RegisterClient(client);
             return client;
         }
@@ -53,9 +68,7 @@ namespace GPlus.Game.Clients
             string? Username = await Steam.GetSteamUsernameAsync(SteamID64.ToString());
             if (Username == null)
             {
-
                 Debug.WriteLine($"[Client] Failed to get username.");
-
                 return;
             }
 
@@ -63,9 +76,7 @@ namespace GPlus.Game.Clients
 
             if (ConnectedClient == null) // This account has nothing to do with us
             {
-
                 Debug.WriteLine($"[Client] Failed to get client by username.");
-
                 return;
             }
 

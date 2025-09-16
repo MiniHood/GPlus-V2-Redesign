@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 
@@ -13,7 +12,6 @@ namespace GPlus.Source.Steam
         public static event EventHandler<int>? OnDownloadProgressChanged;
         public static event EventHandler<int>? OnZipProgressChanged;
         public static event EventHandler<int>? SteamCMDUpdateProgressChange;
-
         public static event EventHandler? OnSteamSetupCompleted;
 
         public static bool IsSteamInstalled()

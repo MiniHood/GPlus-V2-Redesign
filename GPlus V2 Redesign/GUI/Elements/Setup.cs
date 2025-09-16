@@ -1,6 +1,7 @@
 ﻿using GPlus.GUI.Helpers;
 using GPlus.Source;
 using GPlus.Source.Steam;
+using System.Diagnostics;
 using System.Runtime;
 
 namespace GPlus.GUI.Elements
@@ -75,23 +76,11 @@ namespace GPlus.GUI.Elements
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = true));
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
             ChangeLabelText("Awaiting SteamCMD Update...");
+            Debug.WriteLine("Awaiting SteamCMD Update...");
             await SteamSetup.AllowSteamUpdate();
             #endregion
 
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
-            _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = true));
-
-            #region Settings
-            ChangeLabelText("Applying Runtime Settings...");
-            SettingsManager.LoadSettings();
-            #endregion
-
-            #region User Controls
-            ChangeLabelText("Initializing User Controls...");
-            Home.Instance.InitializeUserControls();
-            #endregion
-
-
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = false));
             ChangeLabelText("Initialization Complete!");
             await Task.Delay(1000);
