@@ -25,17 +25,20 @@ namespace GPlus
             base.WndProc(ref m);
         }
 
+        public static void LoadUserControls()
+        {
+            UserControlLoader.InitializeUserControls(
+                Instance._ucDashboard,
+                Instance._ucClients,
+                Instance._ucServers,
+                Instance._ucSettings,
+                Instance._ucNavBar
+            ); // _ucSetup isn't needed.
+        }
+
         private void Home_Load(object sender, EventArgs e)
         {
-            if (DesignMode) return; // why microsoft... Why?
-            SettingsManager.LoadSettings();
-            UserControlLoader.InitializeUserControls(
-                _ucDashboard,
-                _ucClients,
-                _ucServers,
-                _ucSettings,
-                _ucNavBar
-            ); // _ucSetup isn't needed.
+            if (DesignMode) return; // why microsoft... Why?            
         }
     }
 }
