@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Folder Include="Source\Helpers\" />
+    <Folder Include="Source\Enums\" />
   </ItemGroup>
 
   <ItemGroup>

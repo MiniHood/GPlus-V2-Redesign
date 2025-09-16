@@ -1,6 +1,5 @@
 ﻿using GPlus.Source;
 using Microsoft.Win32;
-using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -21,17 +20,6 @@ using System.Text;
 /// </summary>
 public abstract class SandboxieWrapper
 {
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern bool CreatePipe(out SafeFileHandle hReadPipe, out SafeFileHandle hWritePipe,
-    IntPtr lpPipeAttributes, int nSize);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern bool SetHandleInformation(SafeFileHandle hObject, int dwMask, int dwFlags);
-
-    const int HANDLE_FLAG_INHERIT = 1;
-    const int STARTF_USESTDHANDLES = 0x00000100;
-
-
     /// <summary>
     /// Name of the Sandboxie path.
     /// </summary>
@@ -693,59 +681,6 @@ public abstract class SandboxieWrapper
             return new SB_RESULT<bool>(SB_STATUS.SB_IS64BIT_ERROR, false, false, $"Exception was occurred: {err.Message}");
         }
     }
-
-    public static SB_RESULT<Process?> RunBoxedWithRedirect(
-        string filePath,
-        string? arguments = null,
-        string boxName = "DefaultBox",
-        Action<string>? onOutput = null
-    )
-    {
-        if (!IsSbieExists().Result)
-            return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
-                "Sandboxie path does not exist");
-
-        if (!File.Exists(filePath))
-            return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_NOT_EXISTS, false, null,
-                "File does not exist");
-
-        CreatePipe(out var hRead, out var hWrite, IntPtr.Zero, 0);
-        SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
-
-        Api.STARTUPINFO startupInfo = new();
-        startupInfo.cb = Marshal.SizeOf(startupInfo);
-        startupInfo.dwFlags = STARTF_USESTDHANDLES;
-        startupInfo.hStdOutput = hWrite.DangerousGetHandle();
-        startupInfo.hStdError = hWrite.DangerousGetHandle();
-        startupInfo.hStdInput = IntPtr.Zero;
-
-        string cmdLine = arguments != null ? $"{filePath} {arguments}" : filePath;
-
-        var startResult = Api.RunSandboxed(boxName, cmdLine, SbiePath, 0, ref startupInfo, out var processInfo);
-
-        if (!startResult)
-            return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
-                "Failed to start sandboxed process");
-
-        hWrite.Close();
-
-        var reader = new StreamReader(new FileStream(hRead, FileAccess.Read));
-        var proc = Process.GetProcessById((int)processInfo.dwProcessId);
-
-        // Kick off async reading
-        _ = Task.Run(async () =>
-        {
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                if (onOutput != null)
-                    onOutput(line); 
-            }
-        });
-
-        return new SB_RESULT<Process?>(SB_STATUS.SB_OK, true, proc);
-    }
-
 
     public static SB_RESULT<Process?> RunBoxed(string filePath, string? arguments = null, string boxName = "DefaultBox")
     {

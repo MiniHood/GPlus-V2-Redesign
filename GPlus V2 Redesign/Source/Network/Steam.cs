@@ -17,19 +17,5 @@ namespace GPlus.Source.Network
             if (players.GetArrayLength() == 0) return null;
             return players[0].GetProperty("personaname").GetString();
         }
-
-        public static async Task<bool?> CheckAppOwnership(string steamId64, string appid)
-        {
-            using var http = new HttpClient();
-            var url = $"https://partner.steam-api.com/ISteamUser/CheckAppOwnership/v4/?key={SettingsManager.CurrentSettings.General.SteamAPIKey}&steamid={steamId64}&appid={appid}";
-            var json = await http.GetStringAsync(url);
-            using var doc = JsonDocument.Parse(json);
-
-            var ownsElement = doc.RootElement
-                             .GetProperty("response")
-                             .GetProperty("ownsapp");
-
-            return ownsElement.GetBoolean() ? true : false;
-        }
     }
 }
