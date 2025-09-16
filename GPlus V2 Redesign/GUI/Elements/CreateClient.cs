@@ -10,15 +10,23 @@ namespace GPlus.GUI.Elements
             InitializeComponent();
         }
 
-        private void _btnAddClient_Click(object sender, EventArgs e)
+        private void _btnCreateClient_Click(object sender, EventArgs e)
         {
             SendToBack();
             Hide();
 
             SandboxieManager.CreateNewSandbox(new LoginDetails { Username = _txtUsername.Text, Password = _txtPassword.Text });
 
-            _txtPassword.Text = "Password";
-            _txtUsername.Text = "Username";
+            _txtPassword.Text = "";
+            _txtUsername.Text = "";
+        }
+
+        private void _btnClose_Click(object sender, EventArgs e)
+        {
+            _txtPassword.Text = "";
+            _txtUsername.Text = "";
+            SendToBack();
+            Hide();
         }
     }
 }
