@@ -28,29 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            ListViewGroup listViewGroup1 = new ListViewGroup("Unconnected", HorizontalAlignment.Left);
-            ListViewItem listViewItem1 = new ListViewItem(new string[] { "Test" }, -1, Color.White, Color.FromArgb(32, 32, 32), null);
-            _btnCreateClient = new ReaLTaiizor.Controls.SpaceButton();
+            ListViewGroup listViewGroup2 = new ListViewGroup("Unconnected", HorizontalAlignment.Left);
+            ListViewItem listViewItem2 = new ListViewItem(new string[] { "Test" }, -1, Color.White, Color.FromArgb(32, 32, 32), null);
             _listClients = new ReaLTaiizor.Controls.PoisonListView();
             _listColumn = new ColumnHeader();
+            _btnCreateClient = new ReaLTaiizor.Controls.ParrotButton();
             _ucCreateClient = new CreateClient();
             SuspendLayout();
-            // 
-            // _btnCreateClient
-            // 
-            _btnCreateClient.Customization = "Kioq/zIyMv8yMjL/Kioq/y8vL/8nJyf//v7+/yMjI/8qKir/";
-            _btnCreateClient.Dock = DockStyle.Bottom;
-            _btnCreateClient.Font = new Font("Verdana", 8F);
-            _btnCreateClient.Image = null;
-            _btnCreateClient.Location = new Point(0, 403);
-            _btnCreateClient.Name = "_btnCreateClient";
-            _btnCreateClient.NoRounding = false;
-            _btnCreateClient.Size = new Size(599, 24);
-            _btnCreateClient.TabIndex = 1;
-            _btnCreateClient.Text = "Create Client";
-            _btnCreateClient.TextAlignment = HorizontalAlignment.Center;
-            _btnCreateClient.Transparent = false;
-            _btnCreateClient.Click += _btnCreateClient_Click;
             // 
             // _listClients
             // 
@@ -58,20 +42,19 @@
             _listClients.BackColor = Color.FromArgb(32, 32, 32);
             _listClients.BorderStyle = BorderStyle.None;
             _listClients.Columns.AddRange(new ColumnHeader[] { _listColumn });
-            _listClients.Dock = DockStyle.Right;
             _listClients.Font = new Font("Segoe UI", 12F);
             _listClients.ForeColor = Color.White;
             _listClients.FullRowSelect = true;
-            listViewGroup1.Header = "Unconnected";
-            listViewGroup1.Name = "_listUnconnected";
-            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup1 });
+            listViewGroup2.Header = "Unconnected";
+            listViewGroup2.Name = "_listUnconnected";
+            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup2 });
             _listClients.HideSelection = true;
-            listViewItem1.Group = listViewGroup1;
-            _listClients.Items.AddRange(new ListViewItem[] { listViewItem1 });
+            listViewItem2.Group = listViewGroup2;
+            _listClients.Items.AddRange(new ListViewItem[] { listViewItem2 });
             _listClients.Location = new Point(451, 0);
             _listClients.Name = "_listClients";
             _listClients.OwnerDraw = true;
-            _listClients.Size = new Size(148, 403);
+            _listClients.Size = new Size(148, 385);
             _listClients.TabIndex = 2;
             _listClients.Theme = ReaLTaiizor.Enum.Poison.ThemeStyle.Dark;
             _listClients.UseCompatibleStateImageBehavior = false;
@@ -80,15 +63,36 @@
             _listClients.UseSelectable = true;
             _listClients.UseStyleColors = true;
             // 
+            // _btnCreateClient
+            // 
+            _btnCreateClient.BackgroundColor = Color.FromArgb(18, 18, 18);
+            _btnCreateClient.ButtonImage = null;
+            _btnCreateClient.ButtonStyle = ReaLTaiizor.Controls.ParrotButton.Style.MaterialRounded;
+            _btnCreateClient.ButtonText = "Create Client";
+            _btnCreateClient.ClickBackColor = Color.FromArgb(195, 195, 195);
+            _btnCreateClient.ClickTextColor = Color.FromArgb(22, 22, 22);
+            _btnCreateClient.CornerRadius = 5;
+            _btnCreateClient.Horizontal_Alignment = StringAlignment.Center;
+            _btnCreateClient.HoverBackgroundColor = Color.FromArgb(225, 225, 225);
+            _btnCreateClient.HoverTextColor = Color.Gainsboro;
+            _btnCreateClient.ImagePosition = ReaLTaiizor.Controls.ParrotButton.ImgPosition.Left;
+            _btnCreateClient.Location = new Point(451, 384);
+            _btnCreateClient.Name = "_btnCreateClient";
+            _btnCreateClient.Size = new Size(148, 43);
+            _btnCreateClient.SmoothingType = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            _btnCreateClient.TabIndex = 8;
+            _btnCreateClient.TextColor = SystemColors.GrayText;
+            _btnCreateClient.TextRenderingType = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            _btnCreateClient.Vertical_Alignment = StringAlignment.Center;
+            _btnCreateClient.Click += _btnCreateClient_Click;
+            // 
             // _ucCreateClient
             // 
             _ucCreateClient.BackColor = Color.FromArgb(32, 32, 32);
-            _ucCreateClient.Dock = DockStyle.Fill;
-            _ucCreateClient.Location = new Point(0, 0);
+            _ucCreateClient.Location = new Point(112, 62);
             _ucCreateClient.Name = "_ucCreateClient";
-            _ucCreateClient.Size = new Size(451, 403);
-            _ucCreateClient.TabIndex = 3;
-            _ucCreateClient.Load += _ucCreateClient_Load;
+            _ucCreateClient.Size = new Size(233, 262);
+            _ucCreateClient.TabIndex = 9;
             // 
             // Clients
             // 
@@ -96,8 +100,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
             Controls.Add(_ucCreateClient);
-            Controls.Add(_listClients);
             Controls.Add(_btnCreateClient);
+            Controls.Add(_listClients);
             Name = "Clients";
             Size = new Size(599, 427);
             Load += Clients_Load;
@@ -105,9 +109,9 @@
         }
 
         #endregion
-        private ReaLTaiizor.Controls.SpaceButton _btnCreateClient;
         private ReaLTaiizor.Controls.PoisonListView _listClients;
         private ColumnHeader _listColumn;
+        private ReaLTaiizor.Controls.ParrotButton _btnCreateClient;
         private CreateClient _ucCreateClient;
     }
 }
