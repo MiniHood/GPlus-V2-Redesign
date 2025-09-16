@@ -49,10 +49,5 @@
             _ucCreateClient.BringToFront();
             _ucCreateClient.Show();
         }
-
-        private void _ucCreateClient_Load(object sender, EventArgs e)
-        {
-
-        }
     }
 }
