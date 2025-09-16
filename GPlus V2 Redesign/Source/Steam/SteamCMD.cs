@@ -25,6 +25,8 @@ namespace GPlus.Source.Steam
 
         public async static Task<ClientResponse> DownloadGMOD(LoginDetails login)
         {
+            return ClientResponse.SUCCESSFUL;
+
             if(!SteamSetup.IsSteamInstalled())
                 throw new Exception("SteamCMD is not installed.");
 
