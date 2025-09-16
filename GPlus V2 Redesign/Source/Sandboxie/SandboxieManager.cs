@@ -1,7 +1,7 @@
 ﻿using GPlus.Source.Structs;
 using System.Diagnostics;
 
-namespace GPlus.Source.Sandboxing
+namespace GPlus.Source.Sandboxie
 {
     internal class SandboxieManager
     {
