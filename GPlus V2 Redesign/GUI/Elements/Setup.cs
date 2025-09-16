@@ -78,10 +78,38 @@ namespace GPlus.GUI.Elements
             ChangeLabelText("Awaiting SteamCMD Update...");
             Debug.WriteLine("Awaiting SteamCMD Update...");
             await SteamSetup.AllowSteamUpdate();
+
+            // wait for steamcmd to close to avoid recovery loop and file locks
+            ChangeLabelText("Waiting for SteamCMD Shutdown...");
+            Debug.WriteLine("Waiting for SteamCMD Shutdown...");
+            while (SteamSetup.IsSteamCMDRunning())
+            {
+                await Task.Delay(1000);
+            }
+            #endregion
+
+            #region Settings
+            ChangeLabelText("Loading Settings...");
+            SettingsManager.LoadSettings();
+            await Task.Delay(500);
+            #endregion
+
+            #region User Controls
+            ChangeLabelText("Loading User Controls...");
+            Home.LoadUserControls();
+            await Task.Delay(500);
             #endregion
 
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = false));
+
+            if(!SteamSetup.IsGMODInstalled())
+            {
+                _ucSetupAccount.Invoke(new Action(() => _ucSetupAccount.Visible = true));
+                _ucSetupAccount.Invoke(new Action(() => _ucSetupAccount.BringToFront()));
+                return true; // hand off to set up account uc
+            }
+
             ChangeLabelText("Initialization Complete!");
             await Task.Delay(1000);
 
@@ -93,8 +121,8 @@ namespace GPlus.GUI.Elements
         private void Setup_Load(object sender, EventArgs e)
         {
             if (DesignMode) return;
-            if (SteamSetup.IsSteamInstalled())
-            { this.Dispose(); return; }
+            //if (SteamSetup.IsSteamInstalled())
+            //{ this.Dispose(); return; }
 
             SteamSetup.OnDownloadProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnZipProgressChanged += (object? s, int e) => { ChangeProgress(e); };
