@@ -1,13 +1,7 @@
 ﻿using GPlus.Source.Enums;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Structs;
-using Microsoft.VisualBasic.Logging;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using static SandboxieWrapper;
-
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
 
 namespace GPlus.Source.Steam
 {
@@ -15,30 +9,47 @@ namespace GPlus.Source.Steam
     {
         public static event EventHandler<int>? OnDownloadProgressChanged;
 
+        private const string GMOD_APP_ID = "4000";
+
         public static string GetSteamCMDPath()
         {
-            if(!SteamSetup.IsSteamInstalled())
-                throw new Exception("SteamCMD is not installed.");
+            if (!SteamSetup.IsSteamInstalled())
+                throw new InvalidOperationException("SteamCMD is not installed.");
 
-            return AppDomain.CurrentDomain.BaseDirectory + "steamcmd\\steamcmd.exe";
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "steamcmd", "steamcmd.exe");
         }
 
-        public async static Task<ClientResponse> DownloadGMOD(LoginDetails login)
+        private static void ParseSteamCMDResponse(string? data, ref ClientResponse response)
         {
-            return ClientResponse.SUCCESSFUL;
+            if (string.IsNullOrEmpty(data))
+                return;
 
-            if(!SteamSetup.IsSteamInstalled())
-                throw new Exception("SteamCMD is not installed.");
+            if (data.Contains("This account is protected by") ||
+                data.Contains("Please confirm the login"))
+            {
+                response = ClientResponse.AUTHENABLED;
+            }
+            else if (data.Contains("(Invalid Password)"))
+            {
+                response = ClientResponse.INVALIDPASSWORD;
+            }
+        }
 
-            if(SteamSetup.IsSteamCMDRunning())
-                throw new Exception("Another instance of SteamCMD is already running.");
+        public static async Task<ClientResponse> DownloadGMOD(LoginDetails login)
+        {
+            EnsureSteamSetup();
 
-            ClientResponse response = ClientResponse.SUCCESSFUL; // Default to successful unless an error is found
+            if (SteamSetup.IsSteamCMDRunning())
+                throw new InvalidOperationException("Another instance of SteamCMD is already running.");
+
+            var response = ClientResponse.SUCCESSFUL;
 
             var psi = new ProcessStartInfo
             {
-                FileName = SteamCMD.GetSteamCMDPath(),
-                Arguments = $"+force_install_dir \"{Application.StartupPath}\\GMOD\\\" +login {login.Username} {login.Password} +app_update 4000 +quit",
+                FileName = GetSteamCMDPath(),
+                Arguments = $"+force_install_dir \"{Application.StartupPath}\\GMOD\\\" " +
+                            $"+login {login.Username} {login.Password} " +
+                            $"+app_update {GMOD_APP_ID} +quit",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
@@ -46,127 +57,84 @@ namespace GPlus.Source.Steam
                 CreateNoWindow = true
             };
 
-            var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Debug.WriteLine($"[OUT] {e.Data}");
-
-                    if (e.Data.Contains("This account is protected by") ||
-                        e.Data.Contains("Please confirm the login"))
-                    {
-                        response = ClientResponse.AUTHENABLED;
-                    }
-                    else if (e.Data.Contains("(Invalid Password)"))
-                    {
-                        response = ClientResponse.INVALIDPASSWORD;
-                    }
-                }
-            };
+            process.OutputDataReceived += (_, e) => ParseSteamCMDResponse(e.Data, ref response);
 
             process.Start();
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            await process.WaitForExitAsync().ContinueWith(t =>
-            {
-                process.CancelOutputRead();
-                process.CancelErrorRead();
-                process.Close();
-            });
+            await process.WaitForExitAsync();
+
+            process.CancelOutputRead();
+            process.CancelErrorRead();
+
+            return response;
         }
 
-        public static async Task<ClientResponse> DoesClientHave2FA(LoginDetails login,
-            bool Sandboxed = false,
-            Sandboxie _sandbox = null)
+        public static async Task<ClientResponse> DoesClientHave2FA(
+            LoginDetails login,
+            bool sandboxed = false,
+            Sandboxie? sandbox = null)
         {
-            ClientResponse response = ClientResponse.SUCCESSFUL;
+            var response = ClientResponse.SUCCESSFUL;
 
-            switch (Sandboxed)
+            if (sandboxed)
             {
-                case true:
-                    if (_sandbox == null)
-                        throw new Exception("Sandbox argument was null");
+                if (sandbox is null)
+                    throw new ArgumentNullException(nameof(sandbox), "Sandbox argument cannot be null.");
 
-                    string args = $"+login {_sandbox._client.LoginDetails.Username}" +
-                                  $" {_sandbox._client.LoginDetails.Password}" +
-                                  $" +quit";
+                string args = $"+login {sandbox._client.LoginDetails.Username} " +
+                              $"{sandbox._client.LoginDetails.Password} +quit";
 
-                    var result = RunBoxedWithRedirect(
-                        GetSteamCMDPath(),
-                        args,
-                        _sandbox._sandboxName,
-                        line =>
-                        {
-                            if (string.IsNullOrEmpty(line))
-                                return;
+                var result = SandboxieWrapper.RunBoxedWithRedirect(
+                    GetSteamCMDPath(),
+                    args,
+                    sandbox._sandboxName,
+                    line => ParseSteamCMDResponse(line, ref response));
 
-                            if (line.Contains("This account is protected by") ||
-                                line.Contains("Please confirm the login"))
-                            {
-                                response = ClientResponse.AUTHENABLED;
-                            }
-                            else if (line.Contains("(Invalid Password)"))
-                            {
-                                response = ClientResponse.INVALIDPASSWORD;
-                            }
-                        });
+                if (result.Result && result.Data != null)
+                    await result.Data.WaitForExitAsync();
+            }
+            else
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = GetSteamCMDPath(),
+                    Arguments = $"+login {login.Username} {login.Password} +quit",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
 
-                    if (result.Result && result.Data != null)
-                        await result.Data.WaitForExitAsync();
+                using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
-                    break;
+                process.OutputDataReceived += (_, e) =>
+                {
+                    Debug.WriteLine($"[OUT] {e.Data}");
+                    ParseSteamCMDResponse(e.Data, ref response);
+                };
 
-                case false:
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = SteamCMD.GetSteamCMDPath(),
-                        Arguments = $"+login {login.Username} {login.Password} +quit",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        RedirectStandardInput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
 
-                    var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                await process.WaitForExitAsync();
 
-                    process.OutputDataReceived += (sender, e) =>
-                    {
-                        if (!string.IsNullOrEmpty(e.Data))
-                        {
-                            Debug.WriteLine($"[OUT] {e.Data}");
-
-                            if (e.Data.Contains("This account is protected by") ||
-                                e.Data.Contains("Please confirm the login"))
-                            {
-                                response = ClientResponse.AUTHENABLED;
-                            }
-                            else if (e.Data.Contains("(Invalid Password)"))
-                            {
-                                response = ClientResponse.INVALIDPASSWORD;
-                            }
-                        }
-                    };
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    await process.WaitForExitAsync().ContinueWith(t =>
-                    {
-                        process.CancelOutputRead();
-                        process.CancelErrorRead();
-                        process.Close();
-                    });
-
-                    break;
+                process.CancelOutputRead();
+                process.CancelErrorRead();
             }
 
             return response;
         }
 
+        private static void EnsureSteamSetup()
+        {
+            if (!SteamSetup.IsSteamInstalled())
+                throw new InvalidOperationException("SteamCMD is not installed.");
+        }
     }
 }
