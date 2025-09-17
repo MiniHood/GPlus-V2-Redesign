@@ -1,4 +1,4 @@
-﻿using GPlus.Source;
+﻿using GPlus.Source.General;
 using GPlus.Source.Steam;
 using System.Diagnostics;
 

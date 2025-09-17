@@ -1,4 +1,4 @@
-﻿using GPlus.Source;
+﻿using GPlus.Source.General;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json.Linq;

@@ -59,6 +59,16 @@ namespace GPlus.Game.Clients
             return client;
         }
 
+        public static async Task LoadSavedClients()
+        {
+
+        }
+
+        public static async Task SaveClients()
+        {
+
+        }
+
         public static IReadOnlyList<Client> GetAllClients() => _clients;
 
         public static Client? GetClientByUsername(string username) =>

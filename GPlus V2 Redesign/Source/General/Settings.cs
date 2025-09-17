@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace GPlus.Source
+namespace GPlus.Source.General
 {
     public class Settings
     {
