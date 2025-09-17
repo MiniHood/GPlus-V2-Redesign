@@ -1,4 +1,5 @@
-﻿using GPlus.Source.Enums;
+﻿using GPlus.GUI.Helpers;
+using GPlus.Source.Enums;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using System;
@@ -8,6 +9,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -33,18 +35,26 @@ namespace GPlus.GUI.Elements
         {
             if(response.response == ClientResponse.SUCCESSFUL)
             {
-                // Download is complete
+                SteamCMD.OnSteamCMDResponseUpdated -= DownloadProgressChange;
+                SetupAccount.Instance.Dispose();
+                return;
             }
 
             if (response.Progress == null)
                 return;
 
-            if (response.responseType == ResponseType.Verifying)
-                Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Verifying game files."));
-            else if (response.responseType == ResponseType.Downloading)
-                Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Downloading game files."));
-            else if (response.responseType == ResponseType.Commiting)
-                Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Commiting game files."));
+            switch(response.responseType)
+            {
+                case ResponseType.Verifying:
+                    Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Verifying game files."));
+                    break;
+                case ResponseType.Downloading:
+                    Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Downloading game files."));
+                    break;
+                case ResponseType.Commiting:
+                    Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Commiting game files."));
+                    break;
+            }
 
             Instance._spinnerFeedback.Invoke(new Action(() => Instance._spinnerFeedback.Visible = false));
 

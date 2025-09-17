@@ -11,10 +11,11 @@ namespace GPlus.GUI.Elements
     public partial class SetupAccount : UserControl
     {
         private int _timerTickCount;
-
+        public static SetupAccount Instance;
         public SetupAccount()
         {
             InitializeComponent();
+            Instance = this;
         }
 
         private void HideControls()
