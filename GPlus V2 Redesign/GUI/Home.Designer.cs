@@ -139,6 +139,7 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "GPlusV2";
             TransparencyKey = Color.Fuchsia;
+            FormClosing += Home_FormClosing;
             Load += Home_Load;
             MouseDown += Home_MouseDown;
             ResumeLayout(false);
