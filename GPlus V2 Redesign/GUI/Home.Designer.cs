@@ -35,6 +35,7 @@
             _ucServers = new GPlus.GUI.Elements.Servers();
             _ucSettings = new GPlus.GUI.Elements.Settings();
             _ucSetup = new GPlus.GUI.Elements.Setup();
+            _ucShuttingDown = new GPlus.GUI.Elements.ShuttingDown();
             SuspendLayout();
             // 
             // _ctrlControlBox
@@ -62,6 +63,7 @@
             // 
             // _ucNavBar
             // 
+            _ucNavBar.BackColor = Color.FromArgb(26, 26, 26);
             _ucNavBar.Dock = DockStyle.Left;
             _ucNavBar.Location = new Point(0, 0);
             _ucNavBar.Name = "_ucNavBar";
@@ -103,10 +105,19 @@
             // _ucSetup
             // 
             _ucSetup.BackColor = Color.FromArgb(26, 26, 26);
-            _ucSetup.Location = new Point(0, 0);
+            _ucSetup.Location = new Point(0, 37);
             _ucSetup.Name = "_ucSetup";
-            _ucSetup.Size = new Size(752, 464);
+            _ucSetup.Size = new Size(752, 427);
             _ucSetup.TabIndex = 8;
+            // 
+            // _ucShuttingDown
+            // 
+            _ucShuttingDown.BackColor = Color.FromArgb(26, 26, 26);
+            _ucShuttingDown.Location = new Point(0, 37);
+            _ucShuttingDown.Name = "_ucShuttingDown";
+            _ucShuttingDown.Size = new Size(752, 427);
+            _ucShuttingDown.TabIndex = 9;
+            _ucShuttingDown.Visible = false;
             // 
             // Home
             // 
@@ -114,6 +125,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
             ClientSize = new Size(752, 464);
+            Controls.Add(_ucShuttingDown);
             Controls.Add(_ucSetup);
             Controls.Add(_ucClients);
             Controls.Add(_ucNavBar);
@@ -128,6 +140,7 @@
             Text = "GPlusV2";
             TransparencyKey = Color.Fuchsia;
             Load += Home_Load;
+            MouseDown += Home_MouseDown;
             ResumeLayout(false);
         }
 
@@ -140,5 +153,6 @@
         private GUI.Elements.Servers _ucServers;
         private GUI.Elements.Settings _ucSettings;
         private GUI.Elements.Setup _ucSetup;
+        private GUI.Elements.ShuttingDown _ucShuttingDown;
     }
 }

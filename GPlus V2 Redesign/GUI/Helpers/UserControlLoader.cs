@@ -12,14 +12,16 @@ namespace GPlus.GUI.Helpers
         public static Clients? Clients = null;
         public static Servers? Servers = null;
         public static Settings? Settings = null;
+        public static ShuttingDown? ShuttingDown = null;
         public static NavBar? NavBar = null; // Probably never needed but just incase
 
-        public static void InitializeUserControls(Dashboard dashboard, Clients clients, Servers servers, Settings settings, NavBar navbar)
+        public static void InitializeUserControls(Dashboard dashboard, Clients clients, Servers servers, Settings settings, NavBar navbar, ShuttingDown shuttingdown)
         {
             Dashboard = dashboard;
             Clients = clients;
             Servers = servers;
             Settings = settings;
+            ShuttingDown = shuttingdown;
             NavBar = navbar;
         }
 
@@ -28,6 +30,7 @@ namespace GPlus.GUI.Helpers
             Dashboard = null;
             Clients = null;
             Servers = null;
+            Settings = null;
             Settings = null;
             NavBar = null;
         }
