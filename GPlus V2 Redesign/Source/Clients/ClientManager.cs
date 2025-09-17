@@ -33,23 +33,23 @@ namespace GPlus.Game.Clients
             return false;
         }
 
-        private static void RegisterClient(Client client)
+        private async static Task RegisterClient(Client client)
         {
             _clients.Add(client);
-            UserControlLoader.Clients?.RefreshClientList();
+            await UserControlLoader.Clients?.RefreshClientListAsync();
         }
 
-        public static void UnregisterClient(Client client)
+        public async static Task UnregisterClient(Client client)
         {
             client.Dispose();
             _clients.Remove(client);
-            UserControlLoader.Clients?.RefreshClientList();
+            await UserControlLoader.Clients?.RefreshClientListAsync();
         }
 
-        public static void OnShutdown()
+        public async static Task OnShutdown()
         {
             foreach (var client in _clients.ToList())
-                UnregisterClient(client);
+                await UnregisterClient(client);
         }
 
         public static async Task<Client?> CreateClientAsync(LoginDetails login, Sandboxie environment)
@@ -59,7 +59,7 @@ namespace GPlus.Game.Clients
             if (await HasTwoFactorAuthAsync(client))
                 return null;
 
-            RegisterClient(client);
+            await RegisterClient(client);
             return client;
         }
 
