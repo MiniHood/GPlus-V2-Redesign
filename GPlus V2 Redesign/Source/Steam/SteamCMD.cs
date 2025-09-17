@@ -8,7 +8,7 @@ namespace GPlus.Source.Steam
     internal class SteamCMD
     {
         public static event EventHandler<int>? OnDownloadProgressChanged;
-        public static Process CurrentSteamCMDInstance { get; private set; } = null!;
+        public static Process CurrentSteamCMDInstance { get; set; } = null!;
 
 
         public static bool IsSteamCMDRunning()

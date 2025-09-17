@@ -107,7 +107,7 @@ namespace GPlus.Source.Steam
             };
 
             using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-
+            SteamCMD.CurrentSteamCMDInstance = process;
             process.OutputDataReceived += (_, e) =>
             {
                 if (string.IsNullOrEmpty(e.Data)) return;
@@ -135,7 +135,7 @@ namespace GPlus.Source.Steam
             process.BeginErrorReadLine();
 
             await process.WaitForExitAsync();
-
+            SteamCMD.CurrentSteamCMDInstance = null;
             process.CancelOutputRead();
             process.CancelErrorRead();
 
