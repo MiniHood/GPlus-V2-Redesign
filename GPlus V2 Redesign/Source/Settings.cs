@@ -81,23 +81,25 @@ namespace GPlus.Source
                 throw new Exception("Failed to create settings file");
         }
 
-        public static Settings LoadSettings()
+        public static async Task<Settings> LoadSettingsAsync()
         {
-            if (!File.Exists("Settings\\settings.json"))
+            string path = "Settings\\settings.json";
+
+            if (!File.Exists(path))
                 CreateSettings();
 
-            string fileContents = File.ReadAllText("Settings\\settings.json");
+            string fileContents = await File.ReadAllTextAsync(path);
             Settings settings = JsonConvert.DeserializeObject<Settings>(fileContents) ?? new Settings();
             CurrentSettings = settings;
             return settings;
         }
 
-        public static void ChangeSettings(Settings newSettings)
+        public static async Task ChangeSettings(Settings newSettings)
         {
             CurrentSettings = newSettings;
             File.WriteAllText("Settings\\settings.json",
                 JsonConvert.SerializeObject(newSettings, Formatting.Indented));
-            LoadSettings();
+            await LoadSettingsAsync();
         }
     }
 }
