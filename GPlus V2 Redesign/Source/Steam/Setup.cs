@@ -95,52 +95,73 @@ namespace GPlus.Source.Steam
             if (!IsSteamInstalled() || SteamCMD.IsSteamCMDRunning())
                 return false;
 
-            var psi = new ProcessStartInfo
+            bool retry;
+            do
             {
-                FileName = SteamCMD.GetSteamCMDPath(),
-                Arguments = "+login anonymous +exit",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
+                retry = false;
 
-            using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            SteamCMD.CurrentSteamCMDInstance = process;
-            process.OutputDataReceived += (_, e) =>
-            {
-                if (string.IsNullOrEmpty(e.Data)) return;
-
-                Debug.WriteLine($"[OUT] [AllowSteamUpdate] {e.Data}");
-
-                var match = Regex.Match(e.Data, @"\[\s*(\d+)%\]");
-                if (match.Success &&
-                    int.TryParse(match.Groups[1].Value, out int progress) &&
-                    progress > 0)
+                var psi = new ProcessStartInfo
                 {
-                    OnSteamCMDUpdateProgressChanged?.Invoke(null, progress);
-                    Debug.WriteLine($"[AllowSteamUpdate] Progress: {progress}%");
+                    FileName = SteamCMD.GetSteamCMDPath(),
+                    Arguments = "+login anonymous +exit",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                SteamCMD.CurrentSteamCMDInstance = process;
+
+                process.OutputDataReceived += (_, e) =>
+                {
+                    if (string.IsNullOrEmpty(e.Data)) return;
+
+                    Debug.WriteLine($"[OUT] [AllowSteamUpdate] {e.Data}");
+
+                    // Parse progress
+                    var match = Regex.Match(e.Data, @"\[\s*(\d+)%\]");
+                    if (match.Success && int.TryParse(match.Groups[1].Value, out int progress) && progress > 0)
+                    {
+                        OnSteamCMDUpdateProgressChanged?.Invoke(null, progress);
+                        Debug.WriteLine($"[AllowSteamUpdate] Progress: {progress}%");
+                    }
+
+                    // Check for retry signal
+                    if (e.Data.Contains("Retry") || e.Data.Contains("Please try again"))
+                    {
+                        retry = true;
+                    }
+                };
+
+                process.ErrorDataReceived += (_, e) =>
+                {
+                    if (!string.IsNullOrEmpty(e.Data))
+                        Debug.WriteLine($"[ERR] [AllowSteamUpdate] {e.Data}");
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                await process.WaitForExitAsync();
+
+                if (retry)
+                {
+                    Debug.WriteLine("[SteamCMD] Retry requested. Shutting down and retrying...");
+                    await SteamCMD.WaitForSteamCMDExit(); // ensure SteamCMD fully exits before retry
                 }
-            };
 
-            process.ErrorDataReceived += (_, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
-                    Debug.WriteLine($"[ERR] [AllowSteamUpdate] {e.Data}");
-            };
+                process.CancelOutputRead();
+                process.CancelErrorRead();
+                SteamCMD.CurrentSteamCMDInstance = null;
 
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            await process.WaitForExitAsync();
-            SteamCMD.CurrentSteamCMDInstance = null;
-            process.CancelOutputRead();
-            process.CancelErrorRead();
+            } while (retry);
 
             OnSteamSetupCompleted?.Invoke(null, EventArgs.Empty);
             return true;
         }
+
     }
 }
