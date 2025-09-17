@@ -35,6 +35,7 @@
             // 
             // _lblDownloading
             // 
+            _lblDownloading.BackColor = Color.FromArgb(26, 26, 26);
             _lblDownloading.Dock = DockStyle.Top;
             _lblDownloading.Font = new Font("Segoe UI", 20.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
             _lblDownloading.ForeColor = Color.FromArgb(220, 220, 220);
@@ -47,6 +48,7 @@
             // 
             // _lblDisclaimer
             // 
+            _lblDisclaimer.BackColor = Color.FromArgb(26, 26, 26);
             _lblDisclaimer.Dock = DockStyle.Fill;
             _lblDisclaimer.ForeColor = Color.FromArgb(220, 220, 220);
             _lblDisclaimer.Location = new Point(0, 0);
@@ -58,7 +60,7 @@
             // 
             // _progProgressBar
             // 
-            _progProgressBar.BackColor = Color.Transparent;
+            _progProgressBar.BackColor = Color.FromArgb(26, 26, 26);
             _progProgressBar.BaseColor = Color.FromArgb(45, 47, 49);
             _progProgressBar.DarkerProgress = Color.FromArgb(23, 148, 92);
             _progProgressBar.Dock = DockStyle.Bottom;

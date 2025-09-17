@@ -172,7 +172,7 @@
             // 
             // _ucDownloadGMOD
             // 
-            _ucDownloadGMOD.BackColor = Color.FromArgb(32, 32, 32);
+            _ucDownloadGMOD.BackColor = Color.FromArgb(26, 26, 26);
             _ucDownloadGMOD.Enabled = false;
             _ucDownloadGMOD.Location = new Point(0, 0);
             _ucDownloadGMOD.Name = "_ucDownloadGMOD";

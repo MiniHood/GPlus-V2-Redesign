@@ -44,25 +44,25 @@
             _NavBar.Controls.Add(_btnDashboard);
             _NavBar.Dock = DockStyle.Left;
             _NavBar.ForeColor = Color.FromArgb(250, 250, 250);
-            _NavBar.LeftSideColor = Color.FromArgb(32, 32, 32);
+            _NavBar.LeftSideColor = Color.FromArgb(26, 26, 26);
             _NavBar.Location = new Point(0, 0);
             _NavBar.Name = "_NavBar";
-            _NavBar.RightSideColor = Color.FromArgb(32, 32, 32);
-            _NavBar.Side = ReaLTaiizor.Controls.NightPanel.PanelSide.Left;
+            _NavBar.RightSideColor = Color.FromArgb(26, 26, 26);
+            _NavBar.Side = ReaLTaiizor.Controls.NightPanel.PanelSide.Right;
             _NavBar.Size = new Size(157, 464);
             _NavBar.TabIndex = 4;
             // 
             // _btnSettings
             // 
             _btnSettings.BackColor = Color.Transparent;
-            _btnSettings.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnSettings.BorderColor = Color.FromArgb(26, 26, 26);
             _btnSettings.Dock = DockStyle.Top;
             _btnSettings.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnSettings.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnSettings.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             _btnSettings.Image = Properties.Resources.setting;
             _btnSettings.ImageAlign = ContentAlignment.MiddleCenter;
-            _btnSettings.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnSettings.InactiveColor = Color.FromArgb(26, 26, 26);
             _btnSettings.Location = new Point(0, 348);
             _btnSettings.Name = "_btnSettings";
             _btnSettings.PressedBorderColor = Color.FromArgb(45, 45, 45);
@@ -75,14 +75,14 @@
             // _btnClients
             // 
             _btnClients.BackColor = Color.Transparent;
-            _btnClients.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnClients.BorderColor = Color.FromArgb(26, 26, 26);
             _btnClients.Dock = DockStyle.Top;
             _btnClients.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnClients.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnClients.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             _btnClients.Image = Properties.Resources.Users;
             _btnClients.ImageAlign = ContentAlignment.MiddleCenter;
-            _btnClients.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnClients.InactiveColor = Color.FromArgb(26, 26, 26);
             _btnClients.Location = new Point(0, 232);
             _btnClients.Name = "_btnClients";
             _btnClients.PressedBorderColor = Color.FromArgb(45, 45, 45);
@@ -95,14 +95,14 @@
             // _btnServers
             // 
             _btnServers.BackColor = Color.Transparent;
-            _btnServers.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnServers.BorderColor = Color.FromArgb(26, 26, 26);
             _btnServers.Dock = DockStyle.Top;
             _btnServers.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnServers.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnServers.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             _btnServers.Image = Properties.Resources.Servers;
             _btnServers.ImageAlign = ContentAlignment.MiddleCenter;
-            _btnServers.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnServers.InactiveColor = Color.FromArgb(26, 26, 26);
             _btnServers.Location = new Point(0, 116);
             _btnServers.Name = "_btnServers";
             _btnServers.PressedBorderColor = Color.FromArgb(45, 45, 45);
@@ -115,14 +115,14 @@
             // _btnDashboard
             // 
             _btnDashboard.BackColor = Color.Transparent;
-            _btnDashboard.BorderColor = Color.FromArgb(32, 34, 37);
+            _btnDashboard.BorderColor = Color.FromArgb(26, 26, 26);
             _btnDashboard.Dock = DockStyle.Top;
             _btnDashboard.EnteredBorderColor = Color.FromArgb(42, 42, 42);
             _btnDashboard.EnteredColor = Color.FromArgb(32, 34, 37);
             _btnDashboard.Font = new Font("Segoe UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             _btnDashboard.Image = Properties.Resources.Dashboard;
             _btnDashboard.ImageAlign = ContentAlignment.MiddleCenter;
-            _btnDashboard.InactiveColor = Color.FromArgb(32, 34, 37);
+            _btnDashboard.InactiveColor = Color.FromArgb(26, 26, 26);
             _btnDashboard.Location = new Point(0, 0);
             _btnDashboard.Name = "_btnDashboard";
             _btnDashboard.PressedBorderColor = Color.FromArgb(45, 45, 45);
@@ -136,6 +136,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.FromArgb(26, 26, 26);
             Controls.Add(_NavBar);
             Name = "NavBar";
             Size = new Size(150, 464);
