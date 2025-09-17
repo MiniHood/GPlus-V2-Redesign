@@ -48,14 +48,15 @@
                 foreach (var client in group.Clients)
                 {
                     var item = new ListViewItem(
-                        (string[]?)(new[]
+                        new string[]
                         {
-                    client.LoginDetails.Username,
-                    client.ConnectedServer?.Name ?? "Not Connected",
-                    client.Environment.SandboxName
-                        }),
+                            client.LoginDetails.Username,
+                            client.ConnectedServer?.Name ?? "Not Connected",
+                            client.Environment.SandboxName
+                        },
                         listGroup
                     );
+
                     item.Tag = client;
                     _listClients.Items.Add(item);
                 }
