@@ -28,8 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
-            ListViewGroup listViewGroup1 = new ListViewGroup("Unconnected", HorizontalAlignment.Left);
-            ListViewItem listViewItem1 = new ListViewItem(new string[] { "Test" }, -1, Color.White, Color.FromArgb(32, 32, 32), null);
+            ListViewGroup listViewGroup2 = new ListViewGroup("Unconnected", HorizontalAlignment.Center);
+            ListViewItem listViewItem2 = new ListViewItem("ummmmmmmmmp");
             _listClients = new ReaLTaiizor.Controls.PoisonListView();
             _listColumn = new ColumnHeader();
             _btnCreateClient = new ReaLTaiizor.Controls.ParrotButton();
@@ -45,16 +45,16 @@
             _listClients.Font = new Font("Segoe UI", 12F);
             _listClients.ForeColor = Color.White;
             _listClients.FullRowSelect = true;
-            listViewGroup1.Header = "Unconnected";
-            listViewGroup1.Name = "_listUnconnected";
-            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup1 });
+            listViewGroup2.Header = "Unconnected";
+            listViewGroup2.HeaderAlignment = HorizontalAlignment.Center;
+            listViewGroup2.Name = "_listUnconnected";
+            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup2 });
             _listClients.HideSelection = true;
-            listViewItem1.Group = listViewGroup1;
-            _listClients.Items.AddRange(new ListViewItem[] { listViewItem1 });
-            _listClients.Location = new Point(451, 0);
+            _listClients.Items.AddRange(new ListViewItem[] { listViewItem2 });
+            _listClients.Location = new Point(428, 0);
             _listClients.Name = "_listClients";
             _listClients.OwnerDraw = true;
-            _listClients.Size = new Size(148, 385);
+            _listClients.Size = new Size(171, 385);
             _listClients.TabIndex = 2;
             _listClients.Theme = ReaLTaiizor.Enum.Poison.ThemeStyle.Dark;
             _listClients.UseCompatibleStateImageBehavior = false;
@@ -76,9 +76,9 @@
             _btnCreateClient.HoverBackgroundColor = Color.FromArgb(225, 225, 225);
             _btnCreateClient.HoverTextColor = Color.Gainsboro;
             _btnCreateClient.ImagePosition = ReaLTaiizor.Controls.ParrotButton.ImgPosition.Left;
-            _btnCreateClient.Location = new Point(451, 384);
+            _btnCreateClient.Location = new Point(428, 384);
             _btnCreateClient.Name = "_btnCreateClient";
-            _btnCreateClient.Size = new Size(148, 43);
+            _btnCreateClient.Size = new Size(171, 43);
             _btnCreateClient.SmoothingType = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
             _btnCreateClient.TabIndex = 8;
             _btnCreateClient.TextColor = SystemColors.GrayText;
@@ -89,10 +89,11 @@
             // _ucCreateClient
             // 
             _ucCreateClient.BackColor = Color.FromArgb(32, 32, 32);
-            _ucCreateClient.Location = new Point(112, 62);
+            _ucCreateClient.Location = new Point(98, 50);
             _ucCreateClient.Name = "_ucCreateClient";
             _ucCreateClient.Size = new Size(233, 262);
             _ucCreateClient.TabIndex = 9;
+            _ucCreateClient.Visible = false;
             // 
             // Clients
             // 
