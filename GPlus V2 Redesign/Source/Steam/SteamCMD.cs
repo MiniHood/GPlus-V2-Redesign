@@ -9,8 +9,6 @@ namespace GPlus.Source.Steam
     {
         public static event EventHandler<int>? OnDownloadProgressChanged;
 
-        private const string GMOD_APP_ID = "4000";
-
         public static string GetSteamCMDPath()
         {
             if (!SteamSetup.IsSteamInstalled())
@@ -19,37 +17,44 @@ namespace GPlus.Source.Steam
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "steamcmd", "steamcmd.exe");
         }
 
-        private static void ParseSteamCMDResponse(string? data, ref ClientResponse response)
+        private static void ParseSteamCMDResponse(string? data, ref GeneralSteamResponse response)
         {
             if (string.IsNullOrEmpty(data))
                 return;
 
+
             if (data.Contains("This account is protected by") ||
                 data.Contains("Please confirm the login"))
             {
-                response = ClientResponse.AUTHENABLED;
+                response.response = ClientResponse.AUTHENABLED;
             }
             else if (data.Contains("(Invalid Password)"))
             {
-                response = ClientResponse.INVALIDPASSWORD;
+                response.response = ClientResponse.INVALIDPASSWORD;
             }
         }
 
-        public static async Task<ClientResponse> DownloadGMOD(LoginDetails login)
+        public static async Task<GeneralSteamResponse> DownloadGMOD(LoginDetails login)
         {
             EnsureSteamSetup();
 
             if (SteamSetup.IsSteamCMDRunning())
                 throw new InvalidOperationException("Another instance of SteamCMD is already running.");
 
-            var response = ClientResponse.SUCCESSFUL;
+            var generalResponse = new GeneralSteamResponse
+            {
+                Data = null,
+                Progress = null,
+                response = ClientResponse.SUCCESSFUL
+            };
 
             var psi = new ProcessStartInfo
             {
                 FileName = GetSteamCMDPath(),
                 Arguments = $"+force_install_dir \"{Application.StartupPath}\\GMOD\\\" " +
                             $"+login {login.Username} {login.Password} " +
-                            $"+app_update {GMOD_APP_ID} +quit",
+                            $"+app_update 4000 " +
+                            $"+quit",
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
@@ -59,7 +64,8 @@ namespace GPlus.Source.Steam
 
             using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
-            process.OutputDataReceived += (_, e) => ParseSteamCMDResponse(e.Data, ref response);
+
+            process.OutputDataReceived += (_, e) => ParseSteamCMDResponse(e.Data, ref generalResponse);
 
             process.Start();
             process.BeginOutputReadLine();
@@ -70,15 +76,20 @@ namespace GPlus.Source.Steam
             process.CancelOutputRead();
             process.CancelErrorRead();
 
-            return response;
+            return generalResponse;
         }
 
-        public static async Task<ClientResponse> DoesClientHave2FA(
+        public static async Task<GeneralSteamResponse> DoesClientHave2FA(
             LoginDetails login,
             bool sandboxed = false,
             Sandboxie? sandbox = null)
         {
-            var response = ClientResponse.SUCCESSFUL;
+            var generalResponse = new GeneralSteamResponse
+            {
+                Data = null,
+                Progress = null,
+                response = ClientResponse.SUCCESSFUL
+            };
 
             if (sandboxed)
             {
@@ -92,7 +103,7 @@ namespace GPlus.Source.Steam
                     GetSteamCMDPath(),
                     args,
                     sandbox._sandboxName,
-                    line => ParseSteamCMDResponse(line, ref response));
+                    line => ParseSteamCMDResponse(line, ref generalResponse));
 
                 if (result.Result && result.Data != null)
                     await result.Data.WaitForExitAsync();
@@ -115,7 +126,7 @@ namespace GPlus.Source.Steam
                 process.OutputDataReceived += (_, e) =>
                 {
                     Debug.WriteLine($"[OUT] {e.Data}");
-                    ParseSteamCMDResponse(e.Data, ref response);
+                    ParseSteamCMDResponse(e.Data, ref generalResponse);
                 };
 
                 process.Start();
@@ -128,7 +139,7 @@ namespace GPlus.Source.Steam
                 process.CancelErrorRead();
             }
 
-            return response;
+            return generalResponse;
         }
 
         private static void EnsureSteamSetup()

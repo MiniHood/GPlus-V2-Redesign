@@ -64,9 +64,9 @@ namespace GPlus.GUI.Elements
                     TimerTickCount = 0;
                 }
             };
-            ClientResponse result = await SteamCMD.DoesClientHave2FA(login);
+            GeneralSteamResponse result = await SteamCMD.DoesClientHave2FA(login);
 
-            switch (result)
+            switch (result.response)
             {
                 case ClientResponse.AUTHENABLED:
                     Debug.WriteLine("Account has 2FA enabled.");

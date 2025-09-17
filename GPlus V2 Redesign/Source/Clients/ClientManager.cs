@@ -19,13 +19,13 @@ namespace GPlus.Game.Clients
 
         private static async Task<bool> Check2FA(Client client)
         {
-            ClientResponse response = await SteamCMD.DoesClientHave2FA(
+            GeneralSteamResponse response = await SteamCMD.DoesClientHave2FA(
                 client.LoginDetails,
-                Sandboxed: true,
-                _sandbox: client.Enviroment
+                sandboxed: true,
+                sandbox: client.Enviroment
             );
 
-            if (response == ClientResponse.AUTHENABLED)
+            if (response.response == ClientResponse.AUTHENABLED)
             {
                 SandboxieManager.DeleteSandbox(client.Enviroment);
                 Debug.WriteLine($"[Client] Client {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
