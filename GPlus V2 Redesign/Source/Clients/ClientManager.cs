@@ -22,12 +22,12 @@ namespace GPlus.Game.Clients
             GeneralSteamResponse response = await SteamCMD.DoesClientHave2FA(
                 client.LoginDetails,
                 sandboxed: true,
-                sandbox: client.Enviroment
+                sandbox: client.Environment
             );
 
             if (response.response == ClientResponse.AUTHENABLED)
             {
-                SandboxieManager.DeleteSandbox(client.Enviroment);
+                SandboxieManager.DeleteSandbox(client.Environment);
                 Debug.WriteLine($"[Client] Client {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
                 return true;
             }

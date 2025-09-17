@@ -29,7 +29,7 @@
                 foreach (var client in group)
                 {
                     var item = new ListViewItem(
-                        new[] { client.LoginDetails.Username, client.ConnectedServer?.Name ?? "Not Connected", client.Enviroment._sandboxName },
+                        new[] { client.LoginDetails.Username, client.ConnectedServer?.Name ?? "Not Connected", client.Environment._sandboxName },
                         listGroup
                     );
                     item.Tag = client;
