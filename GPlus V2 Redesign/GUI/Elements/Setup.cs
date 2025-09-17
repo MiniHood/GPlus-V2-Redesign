@@ -53,12 +53,6 @@ namespace GPlus.GUI.Elements
             }
         }
 
-        void OnProcessExit(object sender, EventArgs e)
-        {
-            ClientManager.OnShutdown();
-            SandboxieManager.OnShutdown();
-        }
-
         async Task<bool> StartSetup()
         {
             #region Steam Setup
@@ -90,7 +84,7 @@ namespace GPlus.GUI.Elements
             // wait for steamcmd to close to avoid recovery loop and file locks
             ChangeLabelText("Waiting for SteamCMD Shutdown...");
             Debug.WriteLine("Waiting for SteamCMD Shutdown...");
-            while (SteamSetup.IsSteamCMDRunning())
+            while (SteamCMD.IsSteamCMDRunning())
             {
                 await Task.Delay(1000);
             }
@@ -135,7 +129,7 @@ namespace GPlus.GUI.Elements
             SteamSetup.OnDownloadProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnZipProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnSteamCMDUpdateProgressChanged += (object? s, int e) => { ChangeSteamCMDProgress(e); };
-            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(ShuttingDown.OnProcessExit);
 
             Task.Run(async () => { await StartSetup(); });
         }
