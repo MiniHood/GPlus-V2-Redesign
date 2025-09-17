@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -6,41 +8,45 @@ namespace GPlus.Source.Interprocess
 {
     internal static class Memory
     {
+        // Native imports
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern nint OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
+        private static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool CloseHandle(nint hObject);
+        private static extern bool CloseHandle(IntPtr hObject);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern nint VirtualAllocEx(nint hProcess, nint lpAddress,
+        private static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress,
             uint dwSize, uint flAllocationType, uint flProtect);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern bool WriteProcessMemory(nint hProcess, nint lpBaseAddress,
-            byte[] lpBuffer, uint nSize, out nuint lpNumberOfBytesWritten);
+        private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress,
+            byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern nint GetProcAddress(nint hModule, string procName);
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern nint GetModuleHandle(string lpModuleName);
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
 
         [DllImport("kernel32.dll", SetLastError = true)]
-        static extern nint CreateRemoteThread(nint hProcess,
-            nint lpThreadAttributes, uint dwStackSize, nint lpStartAddress,
-            nint lpParameter, uint dwCreationFlags, nint lpThreadId);
+        private static extern IntPtr CreateRemoteThread(IntPtr hProcess,
+            IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress,
+            IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
 
-        const uint PROCESS_CREATE_THREAD = 0x0002;
-        const uint PROCESS_QUERY_INFORMATION = 0x0400;
-        const uint PROCESS_VM_OPERATION = 0x0008;
-        const uint PROCESS_VM_WRITE = 0x0020;
-        const uint PROCESS_VM_READ = 0x0010;
+        // Access flags
+        private const uint PROCESS_CREATE_THREAD = 0x0002;
+        private const uint PROCESS_QUERY_INFORMATION = 0x0400;
+        private const uint PROCESS_VM_OPERATION = 0x0008;
+        private const uint PROCESS_VM_WRITE = 0x0020;
+        private const uint PROCESS_VM_READ = 0x0010;
 
-        const uint MEM_COMMIT = 0x00001000;
-        const uint MEM_RESERVE = 0x00002000;
-        const uint PAGE_READWRITE = 0x04;
+        // Memory flags
+        private const uint MEM_COMMIT = 0x00001000;
+        private const uint MEM_RESERVE = 0x00002000;
+        private const uint PAGE_READWRITE = 0x04;
 
+        // Message structs (left public if needed elsewhere)
         [StructLayout(LayoutKind.Sequential)]
         public struct SteamMessage
         {
@@ -53,81 +59,107 @@ namespace GPlus.Source.Interprocess
         [StructLayout(LayoutKind.Sequential)]
         public struct COPYDATASTRUCT
         {
-            public nint dwData;
+            public IntPtr dwData;
             public int cbData;
-            public nint lpData;
+            public IntPtr lpData;
         }
 
+        /// <summary>
+        /// Returns true if the module with the specified name is loaded in the given process.
+        /// Safely handles processes where module enumeration may fail.
+        /// </summary>
         public static bool IsModuleLoaded(int pid, string dllName)
         {
-            var proc = Process.GetProcessById(pid);
-            return proc.Modules.Cast<ProcessModule>().Any(m =>
-                string.Equals(m.ModuleName, dllName, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(m.FileName, dllName, StringComparison.OrdinalIgnoreCase));
+            try
+            {
+                var proc = Process.GetProcessById(pid);
+                return proc.Modules.Cast<ProcessModule>().Any(m =>
+                    string.Equals(m.ModuleName, dllName, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(m.FileName, dllName, StringComparison.OrdinalIgnoreCase));
+            }
+            catch (Exception)
+            {
+                // Access denied, process exited, or other issue — treat as not loaded.
+                return false;
+            }
         }
 
-        public static void InjectDLL(int pid, string dllPath)
+        /// <summary>
+        /// Attempts to inject the DLL at dllPath into the target process identified by pid.
+        /// Returns true on success, false on failure.
+        /// </summary>
+        public static bool InjectDll(int pid, string dllPath)
         {
-            nint hProcess = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
-                                          PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ,
-                                          false, pid);
-            if (hProcess == nint.Zero)
+            if (string.IsNullOrWhiteSpace(dllPath))
             {
-
-                Debug.WriteLine("Failed to open target process.");
-
-                return;
+                Debug.WriteLine("DLL path is null or empty.");
+                return false;
             }
 
-            nint allocMemAddress = VirtualAllocEx(hProcess, nint.Zero,
-                (uint)((dllPath.Length + 1) * Marshal.SizeOf(typeof(char))),
-                MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-            if (allocMemAddress == nint.Zero)
+            IntPtr hProcess = IntPtr.Zero;
+            try
             {
+                uint access = PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ;
+                hProcess = OpenProcess(access, false, pid);
 
-                Debug.WriteLine("Failed to allocate memory in target process.");
+                if (hProcess == IntPtr.Zero)
+                {
+                    Debug.WriteLine("Failed to open target process.");
+                    return false;
+                }
 
-                CloseHandle(hProcess);
-                return;
+                // Use Unicode (LoadLibraryW) so paths with non-ASCII characters work.
+                byte[] dllPathBytes = Encoding.Unicode.GetBytes(dllPath + '\0');
+                uint allocSize = (uint)dllPathBytes.Length;
+
+                IntPtr allocAddress = VirtualAllocEx(hProcess, IntPtr.Zero, allocSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+                if (allocAddress == IntPtr.Zero)
+                {
+                    Debug.WriteLine("Failed to allocate memory in target process.");
+                    return false;
+                }
+
+                if (!WriteProcessMemory(hProcess, allocAddress, dllPathBytes, allocSize, out _))
+                {
+                    Debug.WriteLine("Failed to write DLL path to target process memory.");
+                    return false;
+                }
+
+                IntPtr kernel32 = GetModuleHandle("kernel32.dll");
+                if (kernel32 == IntPtr.Zero)
+                {
+                    Debug.WriteLine("Failed to get kernel32 module handle.");
+                    return false;
+                }
+
+                // Call LoadLibraryW to match Unicode bytes.
+                IntPtr loadLibraryAddr = GetProcAddress(kernel32, "LoadLibraryW");
+                if (loadLibraryAddr == IntPtr.Zero)
+                {
+                    Debug.WriteLine("Failed to get LoadLibraryW address.");
+                    return false;
+                }
+
+                IntPtr hThread = CreateRemoteThread(hProcess, IntPtr.Zero, 0, loadLibraryAddr, allocAddress, 0, IntPtr.Zero);
+                if (hThread == IntPtr.Zero)
+                {
+                    Debug.WriteLine("Failed to create remote thread.");
+                    return false;
+                }
+
+                Debug.WriteLine($"DLL injected successfully into PID {pid}.");
+                return true;
             }
-
-            byte[] bytes = Encoding.ASCII.GetBytes(dllPath);
-
-            if (!WriteProcessMemory(hProcess, allocMemAddress, bytes, (uint)bytes.Length, out _))
+            catch (Exception ex)
             {
-
-                Debug.WriteLine("Failed to write DLL path to target process.");
-
-                CloseHandle(hProcess);
-                return;
+                Debug.WriteLine($"Exception while injecting DLL: {ex.Message}");
+                return false;
             }
-
-            nint loadLibraryAddr = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
-            if (loadLibraryAddr == nint.Zero)
+            finally
             {
-
-                Debug.WriteLine("Failed to get LoadLibraryA address.");
-
-                CloseHandle(hProcess);
-                return;
+                if (hProcess != IntPtr.Zero)
+                    CloseHandle(hProcess);
             }
-
-            nint hThread = CreateRemoteThread(hProcess, nint.Zero, 0, loadLibraryAddr,
-                                                allocMemAddress, 0, nint.Zero);
-
-            if (hThread == nint.Zero)
-            {
-
-                Debug.WriteLine("Failed to create remote thread.");
-
-                CloseHandle(hProcess);
-                return;
-            }
-
-            Debug.WriteLine("DLL injected successfully!");
-
-            CloseHandle(hProcess);
         }
     }
 }
