@@ -126,7 +126,7 @@ namespace GPlus.GUI.Elements
 
             SteamSetup.OnDownloadProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnZipProgressChanged += (object? s, int e) => { ChangeProgress(e); };
-            SteamSetup.SteamCMDUpdateProgressChange += (object? s, int e) => { ChangeSteamCMDProgress(e); };
+            SteamSetup.OnSteamCMDUpdateProgressChanged += (object? s, int e) => { ChangeSteamCMDProgress(e); };
 
             Task.Run(async () => { await StartSetup(); });
         }
