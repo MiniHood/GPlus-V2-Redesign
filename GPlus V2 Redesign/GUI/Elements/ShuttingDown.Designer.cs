@@ -82,7 +82,7 @@
             Controls.Add(_spinnerFeedback);
             Controls.Add(_lblTitle);
             Name = "ShuttingDown";
-            Size = new Size(752, 464);
+            Size = new Size(752, 427);
             Load += ShuttingDown_Load;
             ResumeLayout(false);
         }

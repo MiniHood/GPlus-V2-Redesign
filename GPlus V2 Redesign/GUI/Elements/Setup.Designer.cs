@@ -42,7 +42,7 @@
             _progProgressBar.DarkerProgress = Color.FromArgb(23, 148, 92);
             _progProgressBar.Dock = DockStyle.Bottom;
             _progProgressBar.ForeColor = Color.FromArgb(35, 168, 109);
-            _progProgressBar.Location = new Point(0, 422);
+            _progProgressBar.Location = new Point(0, 385);
             _progProgressBar.Maximum = 100;
             _progProgressBar.MoveBalloon = true;
             _progProgressBar.Name = "_progProgressBar";
@@ -100,7 +100,7 @@
             _ucSetupAccount.BackColor = Color.FromArgb(26, 26, 26);
             _ucSetupAccount.Location = new Point(0, 0);
             _ucSetupAccount.Name = "_ucSetupAccount";
-            _ucSetupAccount.Size = new Size(752, 464);
+            _ucSetupAccount.Size = new Size(752, 427);
             _ucSetupAccount.TabIndex = 4;
             _ucSetupAccount.Visible = false;
             // 
@@ -115,7 +115,7 @@
             Controls.Add(_progProgressBar);
             Controls.Add(_ucSetupAccount);
             Name = "Setup";
-            Size = new Size(752, 464);
+            Size = new Size(752, 427);
             Load += Setup_Load;
             ResumeLayout(false);
         }

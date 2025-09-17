@@ -82,7 +82,7 @@
             _txtPassword.BorderStyle = BorderStyle.None;
             _txtPassword.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             _txtPassword.ForeColor = Color.FromArgb(220, 220, 220);
-            _txtPassword.Location = new Point(186, 235);
+            _txtPassword.Location = new Point(186, 216);
             _txtPassword.Margin = new Padding(20);
             _txtPassword.Name = "_txtPassword";
             _txtPassword.PlaceholderText = "Password";
@@ -98,7 +98,7 @@
             _txtUsername.BorderStyle = BorderStyle.None;
             _txtUsername.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             _txtUsername.ForeColor = Color.FromArgb(220, 220, 220);
-            _txtUsername.Location = new Point(186, 197);
+            _txtUsername.Location = new Point(186, 178);
             _txtUsername.Margin = new Padding(20);
             _txtUsername.Name = "_txtUsername";
             _txtUsername.PlaceholderText = "Username";
@@ -142,7 +142,7 @@
             _btnGithub.HoverBackgroundColor = Color.FromArgb(26, 26, 26);
             _btnGithub.HoverTextColor = Color.Gainsboro;
             _btnGithub.ImagePosition = ReaLTaiizor.Controls.ParrotButton.ImgPosition.Center;
-            _btnGithub.Location = new Point(705, 422);
+            _btnGithub.Location = new Point(705, 388);
             _btnGithub.Name = "_btnGithub";
             _btnGithub.Size = new Size(47, 39);
             _btnGithub.SmoothingType = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
@@ -176,7 +176,7 @@
             _ucDownloadGMOD.Enabled = false;
             _ucDownloadGMOD.Location = new Point(0, 0);
             _ucDownloadGMOD.Name = "_ucDownloadGMOD";
-            _ucDownloadGMOD.Size = new Size(752, 464);
+            _ucDownloadGMOD.Size = new Size(752, 427);
             _ucDownloadGMOD.TabIndex = 11;
             _ucDownloadGMOD.Visible = false;
             // 
@@ -199,7 +199,7 @@
             Controls.Add(_lblDisclaimer);
             Controls.Add(_lblTitle);
             Name = "SetupAccount";
-            Size = new Size(752, 464);
+            Size = new Size(752, 427);
             ResumeLayout(false);
             PerformLayout();
         }

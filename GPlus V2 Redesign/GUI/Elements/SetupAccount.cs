@@ -51,7 +51,7 @@ namespace GPlus.GUI.Elements
         private void TimerOnTick(object? sender, EventArgs e)
         {
             _timerTickCount++;
-            if (_timerTickCount == 5)
+            if (_timerTickCount == 10)
             {
                 _lblTitle.Text = "Apologies for the long wait...";
                 _tmTimer.Stop();
@@ -85,7 +85,7 @@ namespace GPlus.GUI.Elements
             HandleSteamResponse(result);
         }
 
-        private void HandleSteamResponse(GeneralSteamResponse result)
+        private async void HandleSteamResponse(GeneralSteamResponse result)
         {
             switch (result.response)
             {
@@ -112,6 +112,7 @@ namespace GPlus.GUI.Elements
                     _ucDownloadGMOD.Enabled = true;
                     _ucDownloadGMOD.Visible = true;
                     _ucDownloadGMOD.BringToFront();
+                    await SteamCMD.DownloadGarrysMod(new LoginDetails { Username = _txtUsername.Text, Password = _txtPassword.Text });
                     break;
 
                 default:
@@ -119,6 +120,10 @@ namespace GPlus.GUI.Elements
                     ShowControls("Unhandled response: " + result.response);
                     break;
             }
+
+            _tmTimer.Stop();
+            _tmTimer.Enabled = false;
+            _timerTickCount = 0;
         }
 
         private void _btnGithub_Click(object sender, EventArgs e)

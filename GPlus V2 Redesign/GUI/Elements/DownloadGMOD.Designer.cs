@@ -31,6 +31,8 @@
             _lblDownloading = new ReaLTaiizor.Controls.CrownLabel();
             _lblDisclaimer = new ReaLTaiizor.Controls.CrownLabel();
             _progProgressBar = new ReaLTaiizor.Controls.ForeverProgressBar();
+            _lblFeedback = new ReaLTaiizor.Controls.CrownLabel();
+            _spinnerFeedback = new ReaLTaiizor.Controls.PoisonProgressSpinner();
             SuspendLayout();
             // 
             // _lblDownloading
@@ -77,12 +79,43 @@
             _progProgressBar.TabIndex = 5;
             _progProgressBar.Text = "Downloading";
             _progProgressBar.Value = 0;
+            _progProgressBar.Click += _progProgressBar_Click;
+            // 
+            // _lblFeedback
+            // 
+            _lblFeedback.BackColor = Color.FromArgb(26, 26, 26);
+            _lblFeedback.ForeColor = Color.FromArgb(220, 220, 220);
+            _lblFeedback.Location = new Point(0, 248);
+            _lblFeedback.Name = "_lblFeedback";
+            _lblFeedback.Size = new Size(752, 27);
+            _lblFeedback.TabIndex = 6;
+            _lblFeedback.Text = "Starting download.";
+            _lblFeedback.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // _spinnerFeedback
+            // 
+            _spinnerFeedback.BackColor = Color.FromArgb(26, 26, 26);
+            _spinnerFeedback.BackgroundImageLayout = ImageLayout.None;
+            _spinnerFeedback.Location = new Point(324, 278);
+            _spinnerFeedback.Maximum = 100;
+            _spinnerFeedback.Minimum = 45;
+            _spinnerFeedback.Name = "_spinnerFeedback";
+            _spinnerFeedback.Size = new Size(100, 100);
+            _spinnerFeedback.Style = ReaLTaiizor.Enum.Poison.ColorStyle.White;
+            _spinnerFeedback.TabIndex = 7;
+            _spinnerFeedback.Text = ".";
+            _spinnerFeedback.Theme = ReaLTaiizor.Enum.Poison.ThemeStyle.Dark;
+            _spinnerFeedback.UseCustomBackColor = true;
+            _spinnerFeedback.UseSelectable = true;
+            _spinnerFeedback.Value = 60;
             // 
             // DownloadGMOD
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(32, 32, 32);
+            Controls.Add(_spinnerFeedback);
+            Controls.Add(_lblFeedback);
             Controls.Add(_progProgressBar);
             Controls.Add(_lblDownloading);
             Controls.Add(_lblDisclaimer);
@@ -97,5 +130,7 @@
         private ReaLTaiizor.Controls.CrownLabel _lblDownloading;
         private ReaLTaiizor.Controls.CrownLabel _lblDisclaimer;
         private ReaLTaiizor.Controls.ForeverProgressBar _progProgressBar;
+        private ReaLTaiizor.Controls.CrownLabel _lblFeedback;
+        private ReaLTaiizor.Controls.PoisonProgressSpinner _spinnerFeedback;
     }
 }
