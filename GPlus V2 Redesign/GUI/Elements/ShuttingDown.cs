@@ -2,6 +2,8 @@
 using GPlus.GUI.Helpers;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
+using System;
+using System.Diagnostics;
 
 namespace GPlus.GUI.Elements
 {
@@ -36,7 +38,9 @@ namespace GPlus.GUI.Elements
                 Instance._lblFeedback.Text = "Shutting SteamCMD down.";
                 // Attempt to stop recovery loops, but if it doesn't end in time, force close it and clear logs
                 // to avoid recovery loops on next startup.
+
                 await SteamCMD.CurrentSteamCMDInstance.StandardInput.WriteLineAsync("quit");
+
 
                 while (SteamCMD.CurrentSteamCMDInstance != null)
                 {
@@ -53,10 +57,10 @@ namespace GPlus.GUI.Elements
                 }
             }
 
-            Instance._lblFeedback.Text = "Shutting down clients.";
-            await ClientManager.OnShutdown();
             Instance._lblFeedback.Text = "Shutting down Sandboxies.";
             await SandboxieManager.OnShutdown();
+            Instance._lblFeedback.Text = "Shutting down clients.";
+            await ClientManager.OnShutdown();
 
             Instance._lblFeedback.Text = "Shutdown complete.";
             await Task.Delay(1000);
