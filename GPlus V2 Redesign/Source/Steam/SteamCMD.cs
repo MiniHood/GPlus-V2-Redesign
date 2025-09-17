@@ -1,13 +1,15 @@
-﻿using GPlus.Source.Enums;
+﻿using GPlus.GUI.Elements;
+using GPlus.Source.Enums;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Structs;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace GPlus.Source.Steam
 {
     internal class SteamCMD
     {
-        public static event EventHandler<int>? OnDownloadProgressChanged;
+        public static event EventHandler<GeneralSteamResponse>? OnSteamCMDResponseUpdated;
         public static Process CurrentSteamCMDInstance { get; set; } = null!;
 
 
@@ -42,110 +44,74 @@ namespace GPlus.Source.Steam
             catch (Exception ex) { }
         }
 
+        public async static Task WaitForSteamCMDExit()
+        {
+            if (CurrentSteamCMDInstance == null)
+                throw new Exception("No SteamCMD instance to wait for.");
+            await CurrentSteamCMDInstance.WaitForExitAsync();
+            CurrentSteamCMDInstance = null!;
+        }
 
         private static void ParseSteamCMDResponse(string? data, ref GeneralSteamResponse response)
         {
             if (string.IsNullOrEmpty(data))
                 return;
 
+            response.responseType = ResponseType.Unknown;
 
-            if (data.Contains("This account is protected by") ||
-                data.Contains("Please confirm the login"))
-            {
+            if (data.Contains("Looks like steam didn't shutdown cleanly, scheduling immediate update check"))
+                response.response = ClientResponse.RETRY;
+
+            if (data.Contains("This account is protected by") || data.Contains("Please confirm the login"))
                 response.response = ClientResponse.AUTHENABLED;
-            }
             else if (data.Contains("(Invalid Password)"))
-            {
                 response.response = ClientResponse.INVALIDPASSWORD;
-            }
+            else if (data.Contains("Success!"))
+                response.response = ClientResponse.SUCCESSFUL;
+
+            if (data.ToLower().Contains("verifying"))
+                response.responseType = ResponseType.Verifying;
+            else if (data.ToLower().Contains("downloading"))
+                response.responseType = ResponseType.Downloading;
+            else if (data.ToLower().Contains("commiting"))
+                response.responseType = ResponseType.Commiting;
+
+            var progressMatch = Regex.Match(data, @"progress:\s*(\d+(\.\d+)?)", RegexOptions.IgnoreCase);
+            if (progressMatch.Success && double.TryParse(progressMatch.Groups[1].Value, out double progressValue))
+                response.Progress = (int)Math.Round(progressValue);
+
+            Debug.WriteLine($"Response type: {response.responseType}, Progress: {response.Progress}");
+            Debug.WriteLine($"Data: {data}");
+
+            OnSteamCMDResponseUpdated?.Invoke(null, response);
         }
 
-        public static async Task<GeneralSteamResponse> DownloadGMOD(LoginDetails login)
+        public static async Task<GeneralSteamResponse> DownloadGarrysMod(LoginDetails login)
         {
             EnsureSteamSetup();
 
             if (IsSteamCMDRunning())
                 throw new InvalidOperationException("Another instance of SteamCMD is already running.");
 
-            var generalResponse = new GeneralSteamResponse
+            GeneralSteamResponse generalResponse = new()
             {
                 Data = null,
                 Progress = null,
                 response = ClientResponse.SUCCESSFUL
             };
 
-            var psi = new ProcessStartInfo
+            bool retry;
+            do
             {
-                FileName = GetSteamCMDPath(),
-                Arguments = $"+force_install_dir \"{Application.StartupPath}\\GMOD\\\" " +
-                            $"+login {login.Username} {login.Password} " +
-                            $"+app_update 4000 " +
-                            $"+quit",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
+                retry = false;
 
-            using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-            CurrentSteamCMDInstance = process;
-
-            process.OutputDataReceived += (_, e) => ParseSteamCMDResponse(e.Data, ref generalResponse);
-
-            process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-
-            await process.WaitForExitAsync();
-
-            process.CancelOutputRead();
-            process.CancelErrorRead();
-            CurrentSteamCMDInstance = null!;
-
-            return generalResponse;
-        }
-
-        public static async Task<GeneralSteamResponse> DoesClientHave2FA(
-            LoginDetails login,
-            bool sandboxed = false,
-            Sandboxie? sandbox = null)
-        {
-            var generalResponse = new GeneralSteamResponse
-            {
-                Data = null,
-                Progress = null,
-                response = ClientResponse.SUCCESSFUL
-            };
-
-            if (sandboxed)
-            {
-                if (sandbox is null)
-                    throw new ArgumentNullException(nameof(sandbox), "Sandbox argument cannot be null.");
-
-                string args = $"+login {sandbox.Client.LoginDetails.Username} " +
-                              $"{sandbox.Client.LoginDetails.Password} +quit";
-
-                var result = SandboxieWrapper.RunBoxedWithRedirect(
-                    GetSteamCMDPath(),
-                    args,
-                    sandbox.SandboxName,
-                    line => ParseSteamCMDResponse(line, ref generalResponse));
-
-                CurrentSteamCMDInstance = result.Data;
-
-                if (result.Result && result.Data != null)
-                {
-                    await result.Data.WaitForExitAsync();
-                    CurrentSteamCMDInstance = null!;
-                }
-            }
-            else
-            {
                 var psi = new ProcessStartInfo
                 {
                     FileName = GetSteamCMDPath(),
-                    Arguments = $"+login {login.Username} {login.Password} +quit",
+                    Arguments = $"+force_install_dir \"{Application.StartupPath}SteamCMD\\GMOD\" " +
+                                $"+login {login.Username} {login.Password} " +
+                                $"+app_update 4000 validate " +
+                                $"+quit",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
@@ -155,10 +121,14 @@ namespace GPlus.Source.Steam
 
                 using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
                 CurrentSteamCMDInstance = process;
+
                 process.OutputDataReceived += (_, e) =>
                 {
-                    Debug.WriteLine($"[OUT] {e.Data}");
                     ParseSteamCMDResponse(e.Data, ref generalResponse);
+                    if (generalResponse.response == ClientResponse.RETRY)
+                        retry = true;
+
+                    OnSteamCMDResponseUpdated?.Invoke(null, generalResponse);
                 };
 
                 process.Start();
@@ -166,14 +136,109 @@ namespace GPlus.Source.Steam
                 process.BeginErrorReadLine();
 
                 await process.WaitForExitAsync();
-                CurrentSteamCMDInstance = null!;
+
+                if (retry)
+                {
+                    Debug.WriteLine("[SteamCMD] Retry requested. Shutting down and retrying...");
+                    await WaitForSteamCMDExit(); // ensure SteamCMD fully exits before retry
+                }
 
                 process.CancelOutputRead();
                 process.CancelErrorRead();
-            }
+                CurrentSteamCMDInstance = null!;
+
+            } while (retry);
 
             return generalResponse;
         }
+
+        public static async Task<GeneralSteamResponse> DoesClientHave2FA(
+    LoginDetails login,
+    bool sandboxed = false,
+    Sandboxie? sandbox = null)
+        {
+            GeneralSteamResponse generalResponse = new()
+            {
+                Data = null,
+                Progress = null,
+                response = ClientResponse.SUCCESSFUL
+            };
+
+            bool retry;
+            do
+            {
+                retry = false;
+
+                if (sandboxed)
+                {
+                    if (sandbox is null)
+                        throw new ArgumentNullException(nameof(sandbox), "Sandbox argument cannot be null.");
+
+                    string args = $"+login {sandbox.Client.LoginDetails.Username} " +
+                                  $"{sandbox.Client.LoginDetails.Password} +quit";
+
+                    var result = SandboxieWrapper.RunBoxedWithRedirect(
+                        GetSteamCMDPath(),
+                        args,
+                        sandbox.SandboxName,
+                        line =>
+                        {
+                            ParseSteamCMDResponse(line, ref generalResponse);
+                            if (generalResponse.response == ClientResponse.RETRY)
+                                retry = true;
+                        });
+
+                    CurrentSteamCMDInstance = result.Data;
+
+                    if (result.Result && result.Data != null)
+                    {
+                        await result.Data.WaitForExitAsync();
+                        CurrentSteamCMDInstance = null!;
+                    }
+                }
+                else
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = GetSteamCMDPath(),
+                        Arguments = $"+login {login.Username} {login.Password} +quit",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        RedirectStandardInput = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                    CurrentSteamCMDInstance = process;
+
+                    process.OutputDataReceived += (_, e) =>
+                    {
+                        ParseSteamCMDResponse(e.Data, ref generalResponse);
+                        if (generalResponse.response == ClientResponse.RETRY)
+                            retry = true;
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+
+                    await process.WaitForExitAsync();
+
+                    if (retry)
+                    {
+                        Debug.WriteLine("[SteamCMD] Retry requested. Shutting down and retrying...");
+                        await WaitForSteamCMDExit(); // ensure SteamCMD fully exits
+                    }
+
+                    CurrentSteamCMDInstance = null!;
+                }
+
+            } while (retry); // loop until no retry
+
+            return generalResponse;
+        }
+
 
         private static void EnsureSteamSetup()
         {
