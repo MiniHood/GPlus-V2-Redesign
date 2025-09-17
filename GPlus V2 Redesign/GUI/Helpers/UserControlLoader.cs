@@ -24,15 +24,5 @@ namespace GPlus.GUI.Helpers
             ShuttingDown = shuttingdown;
             NavBar = navbar;
         }
-
-        public static void ClearUserControls()
-        {
-            Dashboard = null;
-            Clients = null;
-            Servers = null;
-            Settings = null;
-            Settings = null;
-            NavBar = null;
-        }
     }
 }
