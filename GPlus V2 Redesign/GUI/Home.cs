@@ -1,3 +1,4 @@
+using GPlus.GUI.Elements;
 using GPlus.GUI.Helpers;
 using GPlus.Source;
 using GPlus.Source.Interprocess;
@@ -16,6 +17,8 @@ namespace GPlus
         private static extern bool ReleaseCapture();
 
         public static Home? Instance { get; private set; }
+
+        public static bool FormShutdownAllowed = false;
 
         public Home()
         {
@@ -51,11 +54,6 @@ namespace GPlus
 
         }
 
-        private void _ucShuttingDown_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void Home_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -63,6 +61,16 @@ namespace GPlus
                 ReleaseCapture();
                 SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0);
             }
+        }
+
+        private async void Home_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!FormShutdownAllowed)
+            {
+                e.Cancel = true;
+                await ShuttingDown.OnProcessExit();
+            }
+            return;
         }
     }
 }
