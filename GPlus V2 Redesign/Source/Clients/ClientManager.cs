@@ -57,29 +57,6 @@ namespace GPlus.Game.Clients
             return client;
         }
 
-        public static async Task AttemptSyncAsync(SteamMessage msg)
-        {
-            Debug.WriteLine($"[Client] Attempting to sync {msg.steamID} with PID {msg.processID}");
-
-            // Match SteamID to username
-            var username = await Steam.GetSteamUsernameAsync(msg.steamID.ToString());
-            if (string.IsNullOrEmpty(username))
-            {
-                Debug.WriteLine("[Client] Failed to get username from SteamID.");
-                return;
-            }
-
-            var client = GetClientByUsername(username);
-            if (client == null)
-            {
-                Debug.WriteLine($"[Client] No client found for username {username}.");
-                return;
-            }
-
-            client.SetGMOD(msg.processID);
-            Debug.WriteLine($"[Client] Synced {username} with GMOD process {msg.processID}.");
-        }
-
         public static IReadOnlyList<Client> GetAllClients() => _clients;
 
         public static Client? GetClientByUsername(string username) =>
