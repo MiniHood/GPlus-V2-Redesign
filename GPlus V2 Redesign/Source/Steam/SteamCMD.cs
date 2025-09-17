@@ -8,6 +8,15 @@ namespace GPlus.Source.Steam
     internal class SteamCMD
     {
         public static event EventHandler<int>? OnDownloadProgressChanged;
+        public static Process CurrentSteamCMDInstance { get; private set; } = null!;
+
+
+        public static bool IsSteamCMDRunning()
+        {
+            if (CurrentSteamCMDInstance != null)
+                return true;
+            return false;
+        }
 
         public static string GetSteamCMDPath()
         {
@@ -16,6 +25,23 @@ namespace GPlus.Source.Steam
 
             return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "steamcmd", "steamcmd.exe");
         }
+
+        public static void ForceStopSteamCMD() // Extremely unsafe
+        {
+            if (CurrentSteamCMDInstance == null)
+                throw new Exception("Force steam cmd shutdown failed");
+
+            CurrentSteamCMDInstance.Kill(true);
+            // Clear logs to avoid recovery loop
+            try
+            {
+                string steamlogs = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "steamcmd", "logs");
+                Directory.Delete(steamlogs, true);
+                Directory.CreateDirectory(steamlogs);
+            }
+            catch (Exception ex) { }
+        }
+
 
         private static void ParseSteamCMDResponse(string? data, ref GeneralSteamResponse response)
         {
@@ -38,7 +64,7 @@ namespace GPlus.Source.Steam
         {
             EnsureSteamSetup();
 
-            if (SteamSetup.IsSteamCMDRunning())
+            if (IsSteamCMDRunning())
                 throw new InvalidOperationException("Another instance of SteamCMD is already running.");
 
             var generalResponse = new GeneralSteamResponse
@@ -63,7 +89,7 @@ namespace GPlus.Source.Steam
             };
 
             using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-
+            CurrentSteamCMDInstance = process;
 
             process.OutputDataReceived += (_, e) => ParseSteamCMDResponse(e.Data, ref generalResponse);
 
@@ -75,6 +101,7 @@ namespace GPlus.Source.Steam
 
             process.CancelOutputRead();
             process.CancelErrorRead();
+            CurrentSteamCMDInstance = null!;
 
             return generalResponse;
         }
@@ -105,8 +132,13 @@ namespace GPlus.Source.Steam
                     sandbox.SandboxName,
                     line => ParseSteamCMDResponse(line, ref generalResponse));
 
+                CurrentSteamCMDInstance = result.Data;
+
                 if (result.Result && result.Data != null)
+                {
                     await result.Data.WaitForExitAsync();
+                    CurrentSteamCMDInstance = null!;
+                }
             }
             else
             {
@@ -122,7 +154,7 @@ namespace GPlus.Source.Steam
                 };
 
                 using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-
+                CurrentSteamCMDInstance = process;
                 process.OutputDataReceived += (_, e) =>
                 {
                     Debug.WriteLine($"[OUT] {e.Data}");
@@ -134,6 +166,7 @@ namespace GPlus.Source.Steam
                 process.BeginErrorReadLine();
 
                 await process.WaitForExitAsync();
+                CurrentSteamCMDInstance = null!;
 
                 process.CancelOutputRead();
                 process.CancelErrorRead();
