@@ -59,21 +59,20 @@
             // 
             _txtOneTime.Font = new Font("Segoe UI", 21.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             _txtOneTime.ForeColor = Color.FromArgb(220, 220, 220);
-            _txtOneTime.Location = new Point(0, 161);
+            _txtOneTime.Location = new Point(0, 113);
             _txtOneTime.Name = "_txtOneTime";
-            _txtOneTime.Size = new Size(752, 58);
+            _txtOneTime.Size = new Size(752, 59);
             _txtOneTime.TabIndex = 1;
             _txtOneTime.Text = "Initializing.";
             _txtOneTime.TextAlign = ContentAlignment.MiddleCenter;
             // 
             // _txtFeedback
             // 
-            _txtFeedback.Dock = DockStyle.Fill;
             _txtFeedback.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
             _txtFeedback.ForeColor = Color.FromArgb(220, 220, 220);
-            _txtFeedback.Location = new Point(0, 0);
+            _txtFeedback.Location = new Point(0, 162);
             _txtFeedback.Name = "_txtFeedback";
-            _txtFeedback.Size = new Size(752, 464);
+            _txtFeedback.Size = new Size(752, 26);
             _txtFeedback.TabIndex = 2;
             _txtFeedback.Text = "Downloading...";
             _txtFeedback.TextAlign = ContentAlignment.MiddleCenter;
@@ -82,11 +81,11 @@
             // 
             _spinnerFeedback.BackColor = Color.FromArgb(26, 26, 26);
             _spinnerFeedback.BackgroundImageLayout = ImageLayout.None;
-            _spinnerFeedback.Location = new Point(324, 286);
+            _spinnerFeedback.Location = new Point(324, 238);
             _spinnerFeedback.Maximum = 100;
             _spinnerFeedback.Minimum = 45;
             _spinnerFeedback.Name = "_spinnerFeedback";
-            _spinnerFeedback.Size = new Size(100, 100);
+            _spinnerFeedback.Size = new Size(100, 101);
             _spinnerFeedback.Style = ReaLTaiizor.Enum.Poison.ColorStyle.White;
             _spinnerFeedback.TabIndex = 3;
             _spinnerFeedback.Text = ".";
@@ -103,16 +102,17 @@
             _ucSetupAccount.Name = "_ucSetupAccount";
             _ucSetupAccount.Size = new Size(752, 464);
             _ucSetupAccount.TabIndex = 4;
+            _ucSetupAccount.Visible = false;
             // 
             // Setup
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
+            Controls.Add(_txtFeedback);
             Controls.Add(_spinnerFeedback);
             Controls.Add(_txtOneTime);
             Controls.Add(_progProgressBar);
-            Controls.Add(_txtFeedback);
             Controls.Add(_ucSetupAccount);
             Name = "Setup";
             Size = new Size(752, 464);

@@ -28,11 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             _lblTitle = new ReaLTaiizor.Controls.CrownLabel();
             _spinnerFeedback = new ReaLTaiizor.Controls.PoisonProgressSpinner();
             _lblFeedback = new ReaLTaiizor.Controls.CrownLabel();
-            _Timer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // _lblTitle
@@ -63,7 +61,6 @@
             _spinnerFeedback.UseCustomBackColor = true;
             _spinnerFeedback.UseSelectable = true;
             _spinnerFeedback.Value = 60;
-            _spinnerFeedback.Visible = false;
             // 
             // _lblFeedback
             // 
@@ -75,10 +72,6 @@
             _lblFeedback.TabIndex = 5;
             _lblFeedback.Text = "Shutting down Sandboxies.";
             _lblFeedback.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // _Timer
-            // 
-            _Timer.Interval = 1000;
             // 
             // ShuttingDown
             // 
@@ -99,6 +92,5 @@
         private ReaLTaiizor.Controls.CrownLabel _lblTitle;
         private ReaLTaiizor.Controls.PoisonProgressSpinner _spinnerFeedback;
         private ReaLTaiizor.Controls.CrownLabel _lblFeedback;
-        public System.Windows.Forms.Timer _Timer;
     }
 }
