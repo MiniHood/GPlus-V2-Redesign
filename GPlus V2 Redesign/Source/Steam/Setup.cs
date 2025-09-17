@@ -7,115 +7,95 @@ namespace GPlus.Source.Steam
     public static class SteamSetup
     {
         private const string SteamCMDUrl = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip";
-        private static int DownloadProgress = 0;
 
         public static event EventHandler<int>? OnDownloadProgressChanged;
         public static event EventHandler<int>? OnZipProgressChanged;
-        public static event EventHandler<int>? SteamCMDUpdateProgressChange;
+        public static event EventHandler<int>? OnSteamCMDUpdateProgressChanged;
         public static event EventHandler? OnSteamSetupCompleted;
 
-        public static bool IsSteamCMDRunning()
-        {
-            var processes = Process.GetProcessesByName("steamcmd");
-            return processes.Length > 0;
-        }
+        public static bool IsSteamCMDRunning() =>
+            Process.GetProcessesByName("steamcmd").Any();
 
-        public static bool IsSteamInstalled()
-        {
-            return System.IO.File.Exists("SteamCMD\\steamcmd.exe");
-        }
+        public static bool IsSteamInstalled() =>
+            File.Exists(Path.Combine("SteamCMD", "steamcmd.exe"));
 
-        public static bool IsGMODInstalled()
-        {
-            return System.IO.Directory.Exists("SteamCMD\\GMOD\\");
-        }
+        public static bool IsGMODInstalled() =>
+            Directory.Exists(Path.Combine("SteamCMD", "GMOD"));
 
-        public async static Task<bool> UnzipSteamClient()
+        public static async Task<bool> UnzipSteamClient()
         {
             return await Task.Run(() =>
             {
-                using (ZipArchive archive = ZipFile.OpenRead("SteamCMD\\steamcmd.zip"))
+                string zipPath = Path.Combine("SteamCMD", "steamcmd.zip");
+                if (!File.Exists(zipPath))
+                    throw new FileNotFoundException("SteamCMD zip not found.", zipPath);
+
+                using var archive = ZipFile.OpenRead(zipPath);
+                int totalEntries = archive.Entries.Count;
+                int processedEntries = 0;
+
+                foreach (var entry in archive.Entries)
                 {
-                    int total = archive.Entries.Count;
-                    int current = 0;
+                    string destinationPath = Path.Combine("SteamCMD", entry.FullName);
 
-                    foreach (var entry in archive.Entries)
+                    if (string.IsNullOrEmpty(entry.Name)) // folder entry
                     {
-                        string destinationPath = Path.Combine("SteamCMD", entry.FullName);
-
-                        // Ensure folder exists
-                        if (string.IsNullOrEmpty(entry.Name))
-                        {
-                            Directory.CreateDirectory(destinationPath);
-                            continue;
-                        }
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
-
-                        entry.ExtractToFile(destinationPath, true);
-
-                        current++;
-                        int percent = (int)((double)current / total * 100);
-
-                        OnZipProgressChanged?.Invoke(null, percent);
+                        Directory.CreateDirectory(destinationPath);
+                        continue;
                     }
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+                    entry.ExtractToFile(destinationPath, overwrite: true);
+
+                    processedEntries++;
+                    int percent = (int)((double)processedEntries / totalEntries * 100);
+                    OnZipProgressChanged?.Invoke(null, percent);
                 }
 
                 return true;
             });
         }
 
-        public async static Task<bool> DownloadSteamClient()
+        public static async Task<bool> DownloadSteamClient()
         {
-            // https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip
-
             Directory.CreateDirectory("SteamCMD");
-            Debug.WriteLine("Downloading SteamCMD...");
-            using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(SteamCMDUrl, HttpCompletionOption.ResponseHeadersRead))
-            using (Stream stream = await response.Content.ReadAsStreamAsync())
-            using (FileStream fileStream = new FileStream("SteamCMD\\steamcmd.zip", FileMode.Create, FileAccess.Write, FileShare.None))
-            {
-                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
-                var totalRead = 0L;
-                var buffer = new byte[8192];
-                var isMoreToRead = true;
-                Debug.WriteLine($"Total bytes to download: {totalBytes}");
-                do
-                {
-                    var read = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (read == 0)
-                    {
-                        Debug.WriteLine("Download complete.");
-                        isMoreToRead = false;
-                        return true;
-                    }
-                    else
-                    {
-                        await fileStream.WriteAsync(buffer, 0, read);
-                        totalRead += read;
 
-                        if (totalBytes != -1)
-                        {
-                            double progress = (double)totalRead / totalBytes * 100;
-                            DownloadProgress = (int)progress;
-                            OnDownloadProgressChanged?.Invoke(null, DownloadProgress);
-                            Debug.WriteLine($"Download progress: {DownloadProgress}%");
-                        }
-                    }
+            Debug.WriteLine("Downloading SteamCMD...");
+            using var client = new HttpClient();
+            using var response = await client.GetAsync(SteamCMDUrl, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            string zipPath = Path.Combine("SteamCMD", "steamcmd.zip");
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var fileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+            var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+            long totalRead = 0;
+            var buffer = new byte[8192];
+
+            while (true)
+            {
+                int read = await stream.ReadAsync(buffer.AsMemory(0, buffer.Length));
+                if (read == 0) break;
+
+                await fileStream.WriteAsync(buffer.AsMemory(0, read));
+                totalRead += read;
+
+                if (totalBytes > 0)
+                {
+                    int progress = (int)((double)totalRead / totalBytes * 100);
+                    OnDownloadProgressChanged?.Invoke(null, progress);
+                    Debug.WriteLine($"Download progress: {progress}%");
                 }
-                while (isMoreToRead);
             }
 
-            return false;
+            Debug.WriteLine("Download complete.");
+            return true;
         }
 
         public static async Task<bool> AllowSteamUpdate()
         {
-            if (!IsSteamInstalled())
-                return false;
-
-            if (IsSteamCMDRunning()) // if SteamCMD is already running, we'll get stuck in recovery loop
+            if (!IsSteamInstalled() || IsSteamCMDRunning())
                 return false;
 
             var psi = new ProcessStartInfo
@@ -129,25 +109,25 @@ namespace GPlus.Source.Steam
                 CreateNoWindow = true
             };
 
-            var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
 
-            process.OutputDataReceived += (sender, e) =>
+            process.OutputDataReceived += (_, e) =>
             {
-                if (!string.IsNullOrEmpty(e.Data))
-                {
-                    Debug.WriteLine($"[OUT] [AllowSteamUpdate] {e.Data}");
+                if (string.IsNullOrEmpty(e.Data)) return;
 
-                    var match = Regex.Match(e.Data, @"\[\s*(\d+)%\]");
-                    if (match.Success && int.TryParse(match.Groups[1].Value, out int progress) && progress != 0)
-                    {
-                        SteamCMDUpdateProgressChange?.Invoke(null, progress);
-                        Debug.WriteLine($"[AllowSteamUpdate] SteamCMD Update Progress: {progress}%");
-                    }
+                Debug.WriteLine($"[OUT] [AllowSteamUpdate] {e.Data}");
+
+                var match = Regex.Match(e.Data, @"\[\s*(\d+)%\]");
+                if (match.Success &&
+                    int.TryParse(match.Groups[1].Value, out int progress) &&
+                    progress > 0)
+                {
+                    OnSteamCMDUpdateProgressChanged?.Invoke(null, progress);
+                    Debug.WriteLine($"[AllowSteamUpdate] Progress: {progress}%");
                 }
             };
 
-
-            process.ErrorDataReceived += (sender, e) =>
+            process.ErrorDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                     Debug.WriteLine($"[ERR] [AllowSteamUpdate] {e.Data}");
@@ -157,16 +137,13 @@ namespace GPlus.Source.Steam
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            await process.WaitForExitAsync().ContinueWith(t =>
-            {
-                process.CancelOutputRead();
-                process.CancelErrorRead();
-                process.Close();
-                OnSteamSetupCompleted?.Invoke(null, EventArgs.Empty);
-            });
+            await process.WaitForExitAsync();
 
+            process.CancelOutputRead();
+            process.CancelErrorRead();
+
+            OnSteamSetupCompleted?.Invoke(null, EventArgs.Empty);
             return true;
         }
-
     }
 }
