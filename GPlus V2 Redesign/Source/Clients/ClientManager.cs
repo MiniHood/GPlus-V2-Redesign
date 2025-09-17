@@ -33,6 +33,7 @@ namespace GPlus.Game.Clients
         {
             _clients.Add(client);
             await UserControlLoader.Clients?.RefreshClientListAsync();
+            await SaveClients();
         }
 
         public async static Task UnregisterClient(Client client)
@@ -61,12 +62,25 @@ namespace GPlus.Game.Clients
 
         public static async Task LoadSavedClients()
         {
+            if (!File.Exists(ClientsPath))
+                return;
 
+            var encrypted = await File.ReadAllTextAsync(ClientsPath);
+            var decrypted = FileProtection.Unprotect(encrypted);
+            var savedlogins = JsonConvert.DeserializeObject<List<LoginDetails>>(decrypted, new JsonSerializerSettings { Formatting = Formatting.Indented });
+            if (savedlogins == null) return;
+            foreach (var login in savedlogins)
+            {
+                await SandboxieManager.CreateNewSandboxAsync(login);
+            }
         }
 
         public static async Task SaveClients()
         {
-
+            var logins = _clients.Select(c => c.LoginDetails).ToList();
+            var json = JsonConvert.SerializeObject(logins, Formatting.Indented);
+            var encrypted = FileProtection.Protect(json);
+            await File.WriteAllTextAsync(ClientsPath, encrypted);
         }
 
         public static IReadOnlyList<Client> GetAllClients() => _clients;

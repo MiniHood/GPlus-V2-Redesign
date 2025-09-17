@@ -1,4 +1,5 @@
-﻿using GPlus.Source.General;
+﻿using GPlus.Game.Clients;
+using GPlus.Source.General;
 using GPlus.Source.Steam;
 using System.Diagnostics;
 
@@ -94,6 +95,11 @@ namespace GPlus.GUI.Elements
             {
                 await Task.Delay(1000);
             }
+            #endregion
+
+            #region Load Clients
+            ChangeLabelText("Loading saved clients...");
+            await ClientManager.LoadSavedClients();
             #endregion
 
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
