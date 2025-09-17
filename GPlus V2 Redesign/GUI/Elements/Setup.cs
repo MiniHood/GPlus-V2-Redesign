@@ -55,6 +55,16 @@ namespace GPlus.GUI.Elements
 
         async Task<bool> StartSetup()
         {
+            #region Settings
+            ChangeLabelText("Loading Settings...");
+            await SettingsManager.LoadSettingsAsync();
+            #endregion
+
+            #region User Controls
+            ChangeLabelText("Loading User Controls...");
+            Home.LoadUserControls();
+            #endregion
+
             #region Steam Setup
             if (!SteamSetup.IsSteamInstalled())
             {
@@ -90,18 +100,6 @@ namespace GPlus.GUI.Elements
             }
             #endregion
 
-            #region Settings
-            ChangeLabelText("Loading Settings...");
-            SettingsManager.LoadSettings();
-            await Task.Delay(500);
-            #endregion
-
-            #region User Controls
-            ChangeLabelText("Loading User Controls...");
-            Home.LoadUserControls();
-            await Task.Delay(500);
-            #endregion
-
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = false));
 
@@ -129,7 +127,6 @@ namespace GPlus.GUI.Elements
             SteamSetup.OnDownloadProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnZipProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnSteamCMDUpdateProgressChanged += (object? s, int e) => { ChangeSteamCMDProgress(e); };
-            AppDomain.CurrentDomain.ProcessExit += new EventHandler(ShuttingDown.OnProcessExit);
 
             Task.Run(async () => { await StartSetup(); });
         }
