@@ -7,41 +7,71 @@
             InitializeComponent();
         }
 
-        public void RefreshClientList()
+        public async Task RefreshClientListAsync()
         {
-            var clients = Game.Clients.ClientManager.GetAllClients();
+            // Capture client list on background thread
+            var clients = await Task.Run(() =>
+            {
+                return Game.Clients.ClientManager
+                    .GetAllClients()
+                    .GroupBy(c => c.ConnectedServer?.IP ?? "No IP")
+                    .Select(group => new
+                    {
+                        ServerName = group.First().ConnectedServer?.Name ?? "Not Connected",
+                        Clients = group.ToList()
+                    })
+                    .ToList();
+            });
+
+            // Back on UI thread, update ListView
+            if (_listClients.InvokeRequired)
+            {
+                _listClients.Invoke(() => UpdateListView(clients));
+            }
+            else
+            {
+                UpdateListView(clients);
+            }
+        }
+
+        private void UpdateListView(IEnumerable<dynamic> grouped)
+        {
+            _listClients.BeginUpdate();
             _listClients.Items.Clear();
             _listClients.Groups.Clear();
 
-            // Group clients by server IP
-            var grouped = clients
-                .GroupBy(c => c.ConnectedServer?.IP ?? "No IP")
-                .ToList();
-
             foreach (var group in grouped)
             {
-                // Create a ListViewGroup with the server name as display
-                string serverName = group.First().ConnectedServer?.Name ?? "Not Connected";
-                ListViewGroup listGroup = new ListViewGroup(serverName, HorizontalAlignment.Left);
+                var listGroup = new ListViewGroup(group.ServerName, HorizontalAlignment.Left);
                 _listClients.Groups.Add(listGroup);
 
-                // Add clients to the group
-                foreach (var client in group)
+                foreach (var client in group.Clients)
                 {
                     var item = new ListViewItem(
-                        new[] { client.LoginDetails.Username, client.ConnectedServer?.Name ?? "Not Connected", client.Environment.SandboxName },
+                        (string[]?)(new[]
+                        {
+                    client.LoginDetails.Username,
+                    client.ConnectedServer?.Name ?? "Not Connected",
+                    client.Environment.SandboxName
+                        }),
                         listGroup
                     );
                     item.Tag = client;
                     _listClients.Items.Add(item);
                 }
             }
+
+            _listClients.EndUpdate();
         }
+
 
         private void Clients_Load(object sender, EventArgs e)
         {
             if (DesignMode) return;
-            RefreshClientList();
+            Task.Run(async () =>
+            {
+                await RefreshClientListAsync();
+            });
         }
 
         private void _btnCreateClient_Click(object sender, EventArgs e)
