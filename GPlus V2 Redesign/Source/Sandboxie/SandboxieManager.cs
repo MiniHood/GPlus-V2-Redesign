@@ -27,12 +27,12 @@ namespace GPlus.Source.Sandboxing
             Sandboxies.Append(sandboxie);
         }
 
-        private static void UnregisterSandbox(Sandboxie sandboxie)
+        private static async Task UnregisterSandbox(Sandboxie sandboxie)
         {
             Sandboxies.Remove(sandboxie);
         }
 
-        public static void DeleteSandbox(Sandboxie sandboxie)
+        public static async Task DeleteSandbox(Sandboxie sandboxie)
         {
             // Deleting a sandboxie is as simple as deleting the folder in C:\Sandbox\{sandboxname} and removing the entry from the ini file
             // Sandboxie has an option to auto delete sandboxes on close, but this is not reliable so we'll do it ourselves
@@ -50,14 +50,14 @@ namespace GPlus.Source.Sandboxing
             {
                 proc.WaitForExit();
             }
-            UnregisterSandbox(sandboxie);
+            await UnregisterSandbox(sandboxie);
         }
 
-        public static void OnShutdown()
+        public static async Task OnShutdown()
         {
             foreach (var sandbox in Sandboxies)
             {
-                DeleteSandbox(sandbox);
+                await DeleteSandbox(sandbox);
             }
         }
 
