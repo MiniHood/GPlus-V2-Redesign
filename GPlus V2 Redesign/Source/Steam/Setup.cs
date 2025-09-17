@@ -13,9 +13,6 @@ namespace GPlus.Source.Steam
         public static event EventHandler<int>? OnSteamCMDUpdateProgressChanged;
         public static event EventHandler? OnSteamSetupCompleted;
 
-        public static bool IsSteamCMDRunning() =>
-            Process.GetProcessesByName("steamcmd").Any();
-
         public static bool IsSteamInstalled() =>
             File.Exists(Path.Combine("SteamCMD", "steamcmd.exe"));
 
@@ -95,7 +92,7 @@ namespace GPlus.Source.Steam
 
         public static async Task<bool> AllowSteamUpdate()
         {
-            if (!IsSteamInstalled() || IsSteamCMDRunning())
+            if (!IsSteamInstalled() || SteamCMD.IsSteamCMDRunning())
                 return false;
 
             var psi = new ProcessStartInfo
