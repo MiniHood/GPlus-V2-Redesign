@@ -1,8 +1,5 @@
 using GPlus.GUI.Elements;
 using GPlus.GUI.Helpers;
-using GPlus.Source;
-using GPlus.Source.Interprocess;
-using GPlus.Source.Steam;
 
 namespace GPlus
 {

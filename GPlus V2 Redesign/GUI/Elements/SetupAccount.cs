@@ -1,10 +1,7 @@
 ﻿using GPlus.Source.Enums;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
-using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace GPlus.GUI.Elements
 {

@@ -1,12 +1,11 @@
-﻿using GPlus.Game.Clients;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using static GPlus.Source.Interprocess.Memory;
 
 namespace GPlus.Source.Interprocess
 {
     internal static class Communication
     {
-        public static void ParseCommunication(Message m) 
+        public static void ParseCommunication(Message m)
         {
             // This was originally for syncing gmod process using WM_COPYDATA however
             // I'm going to change this to pipes aswell as using it for more in depth control

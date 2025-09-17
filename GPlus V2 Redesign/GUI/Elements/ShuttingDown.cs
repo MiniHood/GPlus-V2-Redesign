@@ -2,15 +2,6 @@
 using GPlus.GUI.Helpers;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace GPlus.GUI.Elements
 {
@@ -46,12 +37,12 @@ namespace GPlus.GUI.Elements
                 // Attempt to stop recovery loops, but if it doesn't end in time, force close it and clear logs
                 // to avoid recovery loops on next startup.
                 await SteamCMD.CurrentSteamCMDInstance.StandardInput.WriteLineAsync("quit");
-                
-                while(SteamCMD.CurrentSteamCMDInstance != null)
+
+                while (SteamCMD.CurrentSteamCMDInstance != null)
                 {
                     TickCount++;
 
-                    if(TickCount > 10)
+                    if (TickCount > 10)
                     {
                         Instance._lblFeedback.Text = "Forcing SteamCMD shutdown.";
                         SteamCMD.ForceStopSteamCMD();

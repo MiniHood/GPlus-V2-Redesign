@@ -739,7 +739,7 @@ public abstract class SandboxieWrapper
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 if (onOutput != null)
-                    onOutput(line); 
+                    onOutput(line);
             }
         });
 

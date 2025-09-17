@@ -1,10 +1,6 @@
-﻿using GPlus.Game.Clients;
-using GPlus.GUI.Helpers;
-using GPlus.Source;
-using GPlus.Source.Sandboxing;
+﻿using GPlus.Source;
 using GPlus.Source.Steam;
 using System.Diagnostics;
-using System.Runtime;
 
 namespace GPlus.GUI.Elements
 {
@@ -103,7 +99,7 @@ namespace GPlus.GUI.Elements
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = false));
 
-            if(!SteamSetup.IsGMODInstalled())
+            if (!SteamSetup.IsGMODInstalled())
             {
                 _ucSetupAccount.Invoke(new Action(() => _ucSetupAccount.Visible = true));
                 _ucSetupAccount.Invoke(new Action(() => _ucSetupAccount.BringToFront()));

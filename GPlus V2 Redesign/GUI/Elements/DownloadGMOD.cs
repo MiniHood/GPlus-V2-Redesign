@@ -1,18 +1,6 @@
-﻿using GPlus.GUI.Helpers;
-using GPlus.Source.Enums;
+﻿using GPlus.Source.Enums;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace GPlus.GUI.Elements
 {
@@ -33,7 +21,7 @@ namespace GPlus.GUI.Elements
 
         public static void DownloadProgressChange(object sender, GeneralSteamResponse response)
         {
-            if(response.response == ClientResponse.SUCCESSFUL)
+            if (response.response == ClientResponse.SUCCESSFUL)
             {
                 SteamCMD.OnSteamCMDResponseUpdated -= DownloadProgressChange;
                 SetupAccount.Instance.Dispose();
@@ -43,7 +31,7 @@ namespace GPlus.GUI.Elements
             if (response.Progress == null)
                 return;
 
-            switch(response.responseType)
+            switch (response.responseType)
             {
                 case ResponseType.Verifying:
                     Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Verifying game files."));

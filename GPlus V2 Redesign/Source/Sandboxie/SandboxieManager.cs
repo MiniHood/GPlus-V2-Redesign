@@ -44,7 +44,7 @@ namespace GPlus.Source.Sandboxing
                 FileName = CurrentSettings.General.SandboxieBoxCreator,
                 Arguments = $"delete {sandboxie.SandboxName}",
                 UseShellExecute = false,
-                CreateNoWindow = false 
+                CreateNoWindow = false
             };
             using (Process proc = Process.Start(startInfo))
             {
