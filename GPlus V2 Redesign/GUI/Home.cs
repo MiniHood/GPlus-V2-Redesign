@@ -26,16 +26,6 @@ namespace GPlus
             Instance = this;
         }
 
-        protected override void WndProc(ref Message m)
-        {
-            const int WM_COPYDATA = 0x4A;
-            if (m.Msg == WM_COPYDATA)
-            {
-                Communication.ParseCommunication(m);
-            }
-            base.WndProc(ref m);
-        }
-
         public static void LoadUserControls()
         {
             UserControlLoader.InitializeUserControls(
@@ -51,7 +41,6 @@ namespace GPlus
         private void Home_Load(object sender, EventArgs e)
         {
             if (DesignMode) return; // why microsoft... Why?
-
         }
 
         private void Home_MouseDown(object sender, MouseEventArgs e)
