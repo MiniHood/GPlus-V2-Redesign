@@ -2,6 +2,7 @@
 using CoreRCON.Parsers.Standard;
 using GPlus.Game.Servers;
 using GPlus.Source;
+using GPlus.Source.GMOD;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Structs;
 using System.Diagnostics;
@@ -17,6 +18,7 @@ namespace GPlus.Game.Clients
         public Sandboxie Environment { get; }
         public ushort RCONPort { get; private set; }
         public RCON? RCON { get; private set; }
+        public GMOD GMOD { get; set; } = new();
 
         public bool IsConnected => ConnectedServer != null;
 

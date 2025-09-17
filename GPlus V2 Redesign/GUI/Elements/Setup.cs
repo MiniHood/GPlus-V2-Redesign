@@ -1,5 +1,7 @@
-﻿using GPlus.GUI.Helpers;
+﻿using GPlus.Game.Clients;
+using GPlus.GUI.Helpers;
 using GPlus.Source;
+using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
 using System.Diagnostics;
 using System.Runtime;
@@ -49,6 +51,12 @@ namespace GPlus.GUI.Elements
             {
                 _txtFeedback.Text = text;
             }
+        }
+
+        void OnProcessExit(object sender, EventArgs e)
+        {
+            ClientManager.OnShutdown();
+            SandboxieManager.OnShutdown();
         }
 
         async Task<bool> StartSetup()
@@ -113,7 +121,7 @@ namespace GPlus.GUI.Elements
             ChangeLabelText("Initialization Complete!");
             await Task.Delay(1000);
 
-            this.Dispose();
+            Dispose();
 
             return true;
         }
@@ -127,6 +135,7 @@ namespace GPlus.GUI.Elements
             SteamSetup.OnDownloadProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnZipProgressChanged += (object? s, int e) => { ChangeProgress(e); };
             SteamSetup.OnSteamCMDUpdateProgressChanged += (object? s, int e) => { ChangeSteamCMDProgress(e); };
+            AppDomain.CurrentDomain.ProcessExit += new EventHandler(OnProcessExit);
 
             Task.Run(async () => { await StartSetup(); });
         }

@@ -53,6 +53,14 @@ namespace GPlus.Source.Sandboxing
             UnregisterSandbox(sandboxie);
         }
 
+        public static void OnShutdown()
+        {
+            foreach (var sandbox in Sandboxies)
+            {
+                DeleteSandbox(sandbox);
+            }
+        }
+
         public static Sandboxie CreateNewSandbox(LoginDetails loginDetails)
         {
             // Null check rq

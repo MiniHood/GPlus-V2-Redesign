@@ -46,6 +46,12 @@ namespace GPlus.Game.Clients
             UserControlLoader.Clients?.RefreshClientList();
         }
 
+        public static void OnShutdown()
+        {
+            foreach (var client in _clients.ToList())
+                UnregisterClient(client);
+        }
+
         public static async Task<Client?> CreateClientAsync(LoginDetails login, Sandboxie environment)
         {
             var client = new Client(login, environment);
