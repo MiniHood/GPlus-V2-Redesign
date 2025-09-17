@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GPlus.Source.Enums
 {
-    enum ClientResponse
+    public enum ClientResponse
     {
         INVALIDPASSWORD = 0,
         INVALIDUSERNAME = 1,
