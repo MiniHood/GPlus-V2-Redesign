@@ -8,56 +8,41 @@ using System.Diagnostics;
 using System.Management;
 using System.Net;
 
-#pragma warning disable CS8619 // Nullability of reference types in value doesn't match target type.
-#pragma warning disable CS8601 // Possible null reference assignment.
-#pragma warning disable CS8604 // Possible null reference argument.
-
 namespace GPlus.Game.Clients
 {
-    internal class Client
+    internal sealed class Client : IDisposable
     {
-        public LoginDetails LoginDetails;
-        public Server? ConnectedServer;
-        public Sandboxie Enviroment;
-        public ushort RCONPort = 0;
-        public RCON? RCON;
+        public LoginDetails LoginDetails { get; }
+        public Server? ConnectedServer { get; private set; }
+        public Sandboxie Environment { get; }
+        public ushort RCONPort { get; private set; }
+        public RCON? RCON { get; private set; }
 
         public bool IsConnected => ConnectedServer != null;
 
         public event EventHandler? OnSteamStarted;
         public event EventHandler? OnGMODStarted;
 
-        #region Private
+        private Process? _steam;
+        private Process? _gmod;
 
-        private Process Steam;
-        private Process GMOD;
+        #region Private Methods
 
         private void Connect()
         {
-            if (RCON == null || RCON.Connected == false)
-                return;
-
-            if (ConnectedServer == null)
-                return;
-
-            RCON.SendCommandAsync($"connect {ConnectedServer.IP}");
+            if (RCON?.Connected == true && ConnectedServer != null)
+                RCON.SendCommandAsync($"connect {ConnectedServer.IP}");
         }
 
         private void Disconnect()
         {
-            if (RCON == null || RCON.Connected == false)
-                return;
-
-            RCON.SendCommandAsync($"disconnect");
+            if (RCON?.Connected == true)
+                RCON.SendCommandAsync("disconnect");
         }
 
-        private async Task<Status?> GetCurrentStatus()
+        private async Task<Status?> GetCurrentStatusAsync()
         {
-            if (RCON == null)
-                return null;
-
-            Status status = await RCON.SendCommandAsync<Status>("status");
-            return status;
+            return RCON == null ? null : await RCON.SendCommandAsync<Status>("status");
         }
 
         private static IEnumerable<Process> GetChildProcessesRecursive(Process parent)
@@ -66,27 +51,25 @@ namespace GPlus.Game.Clients
 
             try
             {
-                using (
-                    var searcher = new ManagementObjectSearcher(
-                        $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = {parent.Id}"
-                    )
-                )
+                using var searcher = new ManagementObjectSearcher(
+                    $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = {parent.Id}"
+                );
+
+                foreach (var obj in searcher.Get())
                 {
-                    foreach (var @object in searcher.Get())
+                    if (obj["ProcessId"] is int pid)
                     {
-                        int pid = Convert.ToInt32(@object["ProcessId"]);
                         try
                         {
                             var child = Process.GetProcessById(pid);
                             children.Add(child);
-
                             children.AddRange(GetChildProcessesRecursive(child));
                         }
-                        catch { }
+                        catch { /* Ignore missing process */ }
                     }
                 }
             }
-            catch { }
+            catch { /* Ignore WMI failures */ }
 
             return children;
         }
@@ -95,21 +78,16 @@ namespace GPlus.Game.Clients
         {
             try
             {
-                using (
-                    var searcher = new ManagementObjectSearcher(
-                        $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"
-                    )
-                )
-                {
-                    foreach (var @object in searcher.Get())
-                    {
-                        return @object["CommandLine"]?.ToString() ?? string.Empty;
-                    }
-                }
+                using var searcher = new ManagementObjectSearcher(
+                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"
+                );
+
+                foreach (var obj in searcher.Get())
+                    return obj["CommandLine"]?.ToString() ?? string.Empty;
             }
             catch
             {
-                // Fallback if WMI access fails
+                return string.Empty;
             }
 
             return string.Empty;
@@ -117,9 +95,7 @@ namespace GPlus.Game.Clients
 
         private async Task<bool> WaitForSteamLoginAsync(Process steam)
         {
-            Debug.WriteLine(
-                $"[Client] Waiting for Steam login for {LoginDetails.Username} (PID {steam.Id})..."
-            );
+            Debug.WriteLine($"[Client] Waiting for Steam login for {LoginDetails.Username} (PID {steam.Id})...");
 
             while (!steam.HasExited)
             {
@@ -127,101 +103,72 @@ namespace GPlus.Game.Clients
                 {
                     foreach (var child in GetChildProcessesRecursive(steam))
                     {
-                        Debug.WriteLine(
-                            $"[Client] Checking process: {child.ProcessName} (PID {child.Id})"
-                        );
+                        if (!child.ProcessName.Equals("steamwebhelper", StringComparison.OrdinalIgnoreCase))
+                            continue;
 
-                        if (
-                            child.ProcessName.Equals(
-                                "steamwebhelper",
-                                StringComparison.OrdinalIgnoreCase
-                            )
-                        )
+                        var cmdLine = GetCommandLine(child);
+                        if (cmdLine.Contains("--steamid=") && !cmdLine.Contains("--steamid=0"))
                         {
-                            string cmdLine = GetCommandLine(child);
-
-                            Debug.WriteLine($"[Client] steamwebhelper args: {cmdLine}");
-
-                            if (cmdLine.Contains("--steamid=") && !cmdLine.Contains("--steamid=0"))
-                            {
-                                Debug.WriteLine(
-                                    $"[Client] Steam login confirmed for {LoginDetails.Username} (SteamID detected)."
-                                );
-
-                                return true;
-                            }
+                            Debug.WriteLine($"[Client] Steam login confirmed for {LoginDetails.Username}.");
+                            return true;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"[Client] Error while scanning child processes: {ex.Message}");
+                    Debug.WriteLine($"[Client] Error scanning child processes: {ex.Message}");
                 }
 
                 await Task.Delay(1000);
             }
 
             Debug.WriteLine($"[Client] Steam exited before login for {LoginDetails.Username}");
-
             return false;
         }
 
-        private async Task CreateRCONConnection()
+        private async Task CreateRCONConnectionAsync()
         {
             RCON = new RCON(
-                IPAddress.Parse("127.0.0.1"),
-                port: RCONPort,
-                password: SettingsManager.CurrentSettings.General.RCONPassword
+                IPAddress.Loopback,
+                RCONPort,
+                SettingsManager.CurrentSettings.General.RCONPassword
             );
+
             await RCON.ConnectAsync();
-            Enviroment._rconConnection = RCON;
+            Environment._rconConnection = RCON;
         }
 
-        private async void InitialiseClientLoop()
-        {
-            await Task.Run(() => ClientLoop());
-        }
+        private void InitialiseClientLoop() => Task.Run(ClientLoop);
 
         private async Task ClientLoop()
         {
             Debug.WriteLine($"[Client] Starting client loop for {LoginDetails.Username}");
 
-            while (true)
+            while (_steam != null && !_steam.HasExited && _gmod != null && !_gmod.HasExited)
             {
-                if (Steam == null)
+                if (RCON == null)
                 {
-                    Debug.WriteLine(
-                        $"[Client] Steam process is null, exiting client loop for {LoginDetails.Username}"
-                    );
-                    break;
-                }
-
-                if (GMOD == null)
-                {
-                    Debug.WriteLine(
-                        $"[Client] GMOD process is null, exiting client loop for {LoginDetails.Username}"
-                    );
-                    break;
-                }
-
-                while (RCON == null)
-                {
-                    await CreateRCONConnection();
+                    await CreateRCONConnectionAsync();
                     await Task.Delay(10000);
+                    continue;
                 }
 
                 if (ConnectedServer != null)
                 {
-                    Status? status = await GetCurrentStatus();
-                    if (status != null && !status.PublicHost.Contains(ConnectedServer.IP))
-                        Connect();
-                    else if (status == null || status.PublicHost == null)
+                    var status = await GetCurrentStatusAsync();
+                    if (status == null || string.IsNullOrEmpty(status.PublicHost) || !status.PublicHost.Contains(ConnectedServer.IP))
                         Connect();
                 }
+
+                await Task.Delay(5000);
             }
+
+            Debug.WriteLine($"[Client] Exiting client loop for {LoginDetails.Username}");
         }
 
         #endregion
+
+        #region Public API
 
         public async Task<bool> InitialiseSteamAsync()
         {
@@ -232,118 +179,75 @@ namespace GPlus.Game.Clients
                 var processResult = SandboxieWrapper.RunBoxed(
                     SettingsManager.CurrentSettings.General.SteamPath,
                     $"-login {LoginDetails.Username} {LoginDetails.Password}",
-                    Enviroment._sandboxName
+                    Environment._sandboxName
                 );
 
                 if (processResult.Data == null)
                 {
-                    Debug.WriteLine(
-                        $"[Client] Failed to start Steam process for {LoginDetails.Username}"
-                    );
-
+                    Debug.WriteLine($"[Client] Failed to start Steam for {LoginDetails.Username}");
                     return false;
                 }
 
-                Steam = processResult.Data;
+                _steam = processResult.Data;
+                Debug.WriteLine($"[Client] Steam launched (PID {_steam.Id}) for {LoginDetails.Username}");
 
-                Debug.WriteLine(
-                    $"[Client] Steam launched with PID {Steam.Id} for {LoginDetails.Username}"
-                );
-
-                bool loggedIn = await WaitForSteamLoginAsync(Steam);
-
-                if (!loggedIn)
-                {
-                    Debug.WriteLine(
-                        $"[Client] Steam login failed or exited for {LoginDetails.Username}"
-                    );
-
+                if (!await WaitForSteamLoginAsync(_steam))
                     return false;
-                }
-
-                Debug.WriteLine($"[Client] Steam is fully logged in for {LoginDetails.Username}");
 
                 OnSteamStarted?.Invoke(this, EventArgs.Empty);
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(
-                    $"[Client] Exception while starting Steam for {LoginDetails.Username}: {ex}"
-                );
-
+                Debug.WriteLine($"[Client] Error starting Steam for {LoginDetails.Username}: {ex}");
                 return false;
             }
         }
 
         public void StopSteam()
         {
-            if (Steam == null || Steam.HasExited)
-                return;
-            Steam.Close();
-            Steam.Dispose();
+            if (_steam == null || _steam.HasExited) return;
+            _steam.Close();
+            _steam.Dispose();
         }
 
         public void StopGMOD()
         {
-            if (GMOD == null || GMOD.HasExited || Steam == null || Steam.HasExited)
-                return;
-            if (RCON != null && RCON.Connected)
-                RCON.SendCommandAsync("quit");
-            if (RCON != null)
-                RCON.Dispose();
+            if (_gmod == null || _gmod.HasExited || _steam == null || _steam.HasExited) return;
+
             try
             {
-                GMOD.Close();
+                if (RCON?.Connected == true)
+                    RCON.SendCommandAsync("quit");
+
+                RCON?.Dispose();
+                _gmod.Close();
             }
-            catch { }
-            GMOD.Dispose();
+            catch { /* Ignore */ }
+            finally
+            {
+                _gmod?.Dispose();
+            }
         }
 
-        public void SetGMOD(uint ProcessID)
-        {
-            GMOD = Process.GetProcessById((int)ProcessID);
-        }
+        public void SetGMOD(uint processId) => _gmod = Process.GetProcessById((int)processId);
 
-        public bool IsSteamOpen()
-        {
-            if (Steam == null || Steam.HasExited)
-                return false;
-            return true;
-        }
+        public bool IsSteamOpen() => _steam != null && !_steam.HasExited;
+        public bool IsGMODOpen() => _gmod != null && !_gmod.HasExited;
 
-        public bool IsGMODOpen()
-        {
-            if (GMOD == null || GMOD.HasExited)
-                return false;
-            return true;
-        }
-
-        public Client(LoginDetails loginDetails, Sandboxie enviroment)
+        public Client(LoginDetails loginDetails, Sandboxie environment)
         {
             LoginDetails = loginDetails;
-            Enviroment = enviroment;
-            ConnectedServer = null;
+            Environment = environment;
 
             Debug.WriteLine($"[Client] Creating client for {loginDetails.Username}");
 
-            Task.Run(
-                async () =>
-                {
-                    bool steamStarted = await InitialiseSteamAsync();
-                    if (!steamStarted)
-                        return;
-                }
-            );
-
-            Debug.WriteLine($"[Client] Subscribed too OnSteamStarted");
-
-            OnGMODStarted += (sender, e) =>
+            Task.Run(async () =>
             {
-                InitialiseClientLoop();
-            };
+                if (!await InitialiseSteamAsync()) return;
+            });
 
-            Debug.WriteLine($"[Client] Subscribed too OnGMODStarted");
+            OnGMODStarted += (_, _) => InitialiseClientLoop();
         }
 
         public void Dispose()
@@ -353,5 +257,7 @@ namespace GPlus.Game.Clients
             StopGMOD();
             StopSteam();
         }
+
+        #endregion
     }
 }
