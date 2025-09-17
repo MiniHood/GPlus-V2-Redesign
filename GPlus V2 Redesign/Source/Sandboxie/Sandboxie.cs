@@ -7,15 +7,22 @@ namespace GPlus.Source.Sandboxing
 {
     internal class Sandboxie
     {
-        public RCON? _rconConnection;
-        public string _sandboxName;
-        public Client _client;
-        public SteamCMD steamCMD;
+        public RCON? RconConnection { get; set; }
+        public string SandboxName { get; }
+        public Client? Client { get; private set; }
+        public SteamCMD SteamCmd { get; } = new();
 
-        public Sandboxie(LoginDetails loginDetails)
+        public Sandboxie(string username)
         {
-            _sandboxName = loginDetails.Username;
-            _client = ClientManager.CreateClient(loginDetails, this);
+            SandboxName = username ?? throw new ArgumentNullException(nameof(username));
+        }
+
+        public async Task InitialiseAsync(LoginDetails loginDetails)
+        {
+            if (Client != null)
+                throw new InvalidOperationException("Sandboxie is already initialised.");
+
+            Client = await ClientManager.CreateClientAsync(loginDetails, this);
         }
     }
 }

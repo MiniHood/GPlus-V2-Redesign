@@ -96,13 +96,13 @@ namespace GPlus.Source.Steam
                 if (sandbox is null)
                     throw new ArgumentNullException(nameof(sandbox), "Sandbox argument cannot be null.");
 
-                string args = $"+login {sandbox._client.LoginDetails.Username} " +
-                              $"{sandbox._client.LoginDetails.Password} +quit";
+                string args = $"+login {sandbox.Client.LoginDetails.Username} " +
+                              $"{sandbox.Client.LoginDetails.Password} +quit";
 
                 var result = SandboxieWrapper.RunBoxedWithRedirect(
                     GetSteamCMDPath(),
                     args,
-                    sandbox._sandboxName,
+                    sandbox.SandboxName,
                     line => ParseSteamCMDResponse(line, ref generalResponse));
 
                 if (result.Result && result.Data != null)

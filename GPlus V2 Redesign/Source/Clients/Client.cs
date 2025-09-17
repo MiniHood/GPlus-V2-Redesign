@@ -135,7 +135,7 @@ namespace GPlus.Game.Clients
             );
 
             await RCON.ConnectAsync();
-            Environment._rconConnection = RCON;
+            Environment.RconConnection = RCON;
         }
 
         private void InitialiseClientLoop() => Task.Run(ClientLoop);
@@ -179,7 +179,7 @@ namespace GPlus.Game.Clients
                 var processResult = SandboxieWrapper.RunBoxed(
                     SettingsManager.CurrentSettings.General.SteamPath,
                     $"-login {LoginDetails.Username} {LoginDetails.Password}",
-                    Environment._sandboxName
+                    Environment.SandboxName
                 );
 
                 if (processResult.Data == null)

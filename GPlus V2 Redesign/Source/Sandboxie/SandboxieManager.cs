@@ -16,13 +16,14 @@ namespace GPlus.Source.Sandboxing
             {
                 port = rand.Next(10000, 60000);
             }
-            while (Sandboxies.Cast<Sandboxie>().Any(s => s._client.RCONPort == port));
+            while (Sandboxies.Cast<Sandboxie>().Any(s => s.Client.RCONPort == port));
 
             return port;
         }
 
-        private static void RegisterSandbox(Sandboxie sandboxie)
+        private static async void RegisterSandbox(Sandboxie sandboxie, LoginDetails details)
         {
+            await sandboxie.InitialiseAsync(details);
             Sandboxies.Append(sandboxie);
         }
 
@@ -41,7 +42,7 @@ namespace GPlus.Source.Sandboxing
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
                 FileName = CurrentSettings.General.SandboxieBoxCreator,
-                Arguments = $"delete {sandboxie._sandboxName}",
+                Arguments = $"delete {sandboxie.SandboxName}",
                 UseShellExecute = false,
                 CreateNoWindow = false 
             };
@@ -97,8 +98,8 @@ namespace GPlus.Source.Sandboxing
             }
 
 
-            Sandboxie NewSandbox = new Sandboxie(loginDetails);
-            RegisterSandbox(NewSandbox);
+            Sandboxie NewSandbox = new Sandboxie(loginDetails.Username);
+            RegisterSandbox(NewSandbox, loginDetails);
             return NewSandbox;
         }
     }
