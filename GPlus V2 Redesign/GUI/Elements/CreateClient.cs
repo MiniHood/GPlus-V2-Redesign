@@ -1,4 +1,5 @@
-﻿using GPlus.Source.Sandboxing;
+﻿using GPlus.Game.Clients;
+using GPlus.Source.Sandboxing;
 using GPlus.Source.Structs;
 
 namespace GPlus.GUI.Elements
@@ -10,12 +11,12 @@ namespace GPlus.GUI.Elements
             InitializeComponent();
         }
 
-        private void _btnCreateClient_Click(object sender, EventArgs e)
+        private async void _btnCreateClient_Click(object sender, EventArgs e)
         {
             SendToBack();
             Hide();
 
-            SandboxieManager.CreateNewSandbox(new LoginDetails { Username = _txtUsername.Text, Password = _txtPassword.Text });
+            await SandboxieManager.CreateNewSandboxAsync(new LoginDetails { Username = _txtUsername.Text, Password = _txtPassword.Text });
 
             _txtPassword.Text = "";
             _txtUsername.Text = "";
