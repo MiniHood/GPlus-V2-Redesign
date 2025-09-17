@@ -9,17 +9,15 @@ using GPlus.Source.Structs;
 using System.Diagnostics;
 using static GPlus.Source.Interprocess.Memory;
 
-#pragma warning disable CS8603 // Possible null reference return.
-
 namespace GPlus.Game.Clients
 {
     internal static class ClientManager
     {
-        private static List<Client> _clients = new List<Client>();
+        private static readonly List<Client> _clients = new();
 
-        private static async Task<bool> Check2FA(Client client)
+        private static async Task<bool> HasTwoFactorAuthAsync(Client client)
         {
-            GeneralSteamResponse response = await SteamCMD.DoesClientHave2FA(
+            var response = await SteamCMD.DoesClientHave2FA(
                 client.LoginDetails,
                 sandboxed: true,
                 sandbox: client.Environment
@@ -28,18 +26,12 @@ namespace GPlus.Game.Clients
             if (response.response == ClientResponse.AUTHENABLED)
             {
                 SandboxieManager.DeleteSandbox(client.Environment);
-                Debug.WriteLine($"[Client] Client {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
+                Debug.WriteLine($"[Client] {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
                 return true;
             }
 
             return false;
         }
-
-
-        /*public static async void InitializingClientManager()
-        {
-            await Task.Run(async () => { while (true) { ScanSyncOpenGMOD(); await Task.Delay(500); } });
-        }*/
 
         private static void RegisterClient(Client client)
         {
@@ -51,91 +43,47 @@ namespace GPlus.Game.Clients
         {
             client.Dispose();
             _clients.Remove(client);
+            UserControlLoader.Clients?.RefreshClientList();
         }
 
-        public static Client CreateClient(LoginDetails login, Sandboxie Enviroment)
+        public static async Task<Client?> CreateClientAsync(LoginDetails login, Sandboxie environment)
         {
-            bool Has2FA = false;
-            Client client = new Client(login, Enviroment);
-            Task.Run(async () =>
-            {
-                if (await Check2FA(client))
-                    Has2FA = true;
-            });
-            if (Has2FA)
+            var client = new Client(login, environment);
+
+            if (await HasTwoFactorAuthAsync(client))
                 return null;
+
             RegisterClient(client);
             return client;
         }
 
-        public static async void AttemptSync(SteamMessage msg)
+        public static async Task AttemptSyncAsync(SteamMessage msg)
         {
-            ulong SteamID64 = msg.steamID;
-            uint ProcessID = msg.processID;
+            Debug.WriteLine($"[Client] Attempting to sync {msg.steamID} with PID {msg.processID}");
 
-
-            Debug.WriteLine($"[Client] Attempting to sync {SteamID64} with {ProcessID}");
-
-
-            // Let's get the username of the player and match it
-            string? Username = await Steam.GetSteamUsernameAsync(SteamID64.ToString());
-            if (Username == null)
+            // Match SteamID to username
+            var username = await Steam.GetSteamUsernameAsync(msg.steamID.ToString());
+            if (string.IsNullOrEmpty(username))
             {
-                Debug.WriteLine($"[Client] Failed to get username.");
+                Debug.WriteLine("[Client] Failed to get username from SteamID.");
                 return;
             }
 
-            Client ConnectedClient = GetClientByUsername(Username);
-
-            if (ConnectedClient == null) // This account has nothing to do with us
+            var client = GetClientByUsername(username);
+            if (client == null)
             {
-                Debug.WriteLine($"[Client] Failed to get client by username.");
+                Debug.WriteLine($"[Client] No client found for username {username}.");
                 return;
             }
 
-            ConnectedClient.SetGMOD(ProcessID);
+            client.SetGMOD(msg.processID);
+            Debug.WriteLine($"[Client] Synced {username} with GMOD process {msg.processID}.");
         }
 
+        public static IReadOnlyList<Client> GetAllClients() => _clients;
 
-        /*private static void ScanSyncOpenGMOD() // to be removed
-        {
-            // Okay this is weird, we're going to have to scan every open gmod process in all sandboxes, then check if the comms dll has been loaded, if not then it's not synced. and we sync it
-            // communication is dealt with in Home.cs
-
-            var Procs = Process.GetProcessesByName("gmod");
-            if (Procs.Length == 0)
-                return;
-
-            foreach (var proc in Procs)
-            {
-                try
-                {
-                    if (Memory.IsModuleLoaded(proc.Id, "Communication.dll"))
-                    {
-
-                        Debug.WriteLine($"[Client] Module already loaded in {proc.Id}, skipping.");
-
-                        return;
-                    }
-
-
-                    Debug.WriteLine($"[Client] Loading communication DLL into {proc.Id}");
-
-                    Memory.InjectDLL(proc.Id, Application.StartupPath + "\\Resources\\Communication.dll");
-                }
-                catch { }
-            }
-        }*/
-
-        public static List<Client> GetAllClients()
-        {
-            return _clients;
-        }
-
-        public static Client GetClientByUsername(string username)
-        {
-            return _clients.FirstOrDefault(c =>
+        public static Client? GetClientByUsername(string username) =>
+            _clients.FirstOrDefault(c =>
                 string.Equals(c.LoginDetails.Username, username, StringComparison.OrdinalIgnoreCase));
-        }
     }
 }
