@@ -29,48 +29,50 @@ namespace GPlus.GUI.Elements
         {
             _lblFeedback.Text = message;
         }
-        static int _timerTickCount = 0;
 
-        private void SetupTimer()
+        public static bool ShutdownComplete = false;
+        public static int TickCount = 0;
+        public async static Task OnProcessExit()
         {
-            _timerTickCount = 0;
-            _Timer.Enabled = true;
+            if (ShutdownComplete)
+                return;
 
-            _Timer.Tick -= TimerOnTick; // avoid duplicate event handlers
-            _Timer.Tick += TimerOnTick;
-        }
-
-        private void TimerOnTick(object? sender, EventArgs e)
-        {
-            _timerTickCount++;
-            if (_timerTickCount == 5)
-            {
-                _lblTitle.Text = "Forcing SteamCMD shutdown.";
-                _Timer.Stop();
-                _timerTickCount = 0;
-
-                SteamCMD.ForceStopSteamCMD();
-            }
-        }
-
-        public async static void OnProcessExit(object sender, EventArgs e)
-        {
             UserControlLoader.ShuttingDown.Visible = true;
             UserControlLoader.ShuttingDown.BringToFront();
 
             if (SteamCMD.CurrentSteamCMDInstance != null)
             {
-                Instance._lblTitle.Text = "Safely shutting SteamCMD down.";
+                Instance._lblFeedback.Text = "Shutting SteamCMD down.";
                 // Attempt to stop recovery loops, but if it doesn't end in time, force close it and clear logs
                 // to avoid recovery loops on next startup.
                 await SteamCMD.CurrentSteamCMDInstance.StandardInput.WriteLineAsync("quit");
-                Instance._Timer.Start();
+                
+                while(SteamCMD.CurrentSteamCMDInstance != null)
+                {
+                    TickCount++;
+
+                    if(TickCount > 10)
+                    {
+                        Instance._lblFeedback.Text = "Forcing SteamCMD shutdown.";
+                        SteamCMD.ForceStopSteamCMD();
+                        break;
+                    }
+
+                    await Task.Delay(1000);
+                }
             }
 
-            Instance._lblTitle.Text = "Shutting down clients.";
+            Instance._lblFeedback.Text = "Shutting down clients.";
             await ClientManager.OnShutdown();
-            Instance._lblTitle.Text = "Shutting down Sandboxies.";
+            Instance._lblFeedback.Text = "Shutting down Sandboxies.";
             await SandboxieManager.OnShutdown();
+
+            Instance._lblFeedback.Text = "Shutdown complete.";
+            await Task.Delay(1000);
+
+            ShutdownComplete = true;
+            Home.FormShutdownAllowed = true;
+            Application.Exit();
         }
 
         private void ShuttingDown_Load(object sender, EventArgs e)
