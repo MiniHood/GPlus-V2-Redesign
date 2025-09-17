@@ -9,7 +9,7 @@ namespace GPlus.Source.Steam
     internal class SteamCMD
     {
         public static event EventHandler<GeneralSteamResponse>? OnSteamCMDResponseUpdated;
-        public static Process CurrentSteamCMDInstance { get; set; } = null!;
+        public static Process CurrentSteamCMDInstance = null;
 
 
         public static bool IsSteamCMDRunning()
@@ -48,7 +48,7 @@ namespace GPlus.Source.Steam
             if (CurrentSteamCMDInstance == null)
                 throw new Exception("No SteamCMD instance to wait for.");
             await CurrentSteamCMDInstance.WaitForExitAsync();
-            CurrentSteamCMDInstance = null!;
+            CurrentSteamCMDInstance = null;
         }
 
         private static void ParseSteamCMDResponse(string? data, ref GeneralSteamResponse response)
@@ -151,10 +151,7 @@ namespace GPlus.Source.Steam
             return generalResponse;
         }
 
-        public static async Task<GeneralSteamResponse> DoesClientHave2FA(
-    LoginDetails login,
-    bool sandboxed = false,
-    Sandboxie? sandbox = null)
+        public static async Task<GeneralSteamResponse> DoesClientHave2FA(LoginDetails login)
         {
             GeneralSteamResponse generalResponse = new()
             {
@@ -167,76 +164,60 @@ namespace GPlus.Source.Steam
             do
             {
                 retry = false;
-
-                if (sandboxed)
+                var psi = new ProcessStartInfo
                 {
-                    if (sandbox is null)
-                        throw new ArgumentNullException(nameof(sandbox), "Sandbox argument cannot be null.");
+                    FileName = GetSteamCMDPath(),
+                    Arguments = $"+login {login.Username} {login.Password} +quit",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
 
-                    string args = $"+login {sandbox.Client.LoginDetails.Username} " +
-                                  $"{sandbox.Client.LoginDetails.Password} +quit";
+                using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+                CurrentSteamCMDInstance = process;
 
-                    var result = SandboxieWrapper.RunBoxedWithRedirect(
-                        GetSteamCMDPath(),
-                        args,
-                        sandbox.SandboxName,
-                        line =>
-                        {
-                            ParseSteamCMDResponse(line, ref generalResponse);
-                            if (generalResponse.response == ClientResponse.RETRY)
-                                retry = true;
-                        });
+                var tcs = new TaskCompletionSource<bool>();
 
-                    CurrentSteamCMDInstance = result.Data;
+                process.OutputDataReceived += (_, e) =>
+                {
+                    if (e.Data == null) return;
+                    ParseSteamCMDResponse(e.Data, ref generalResponse);
+                    if (generalResponse.response == ClientResponse.RETRY)
+                        retry = true;
+                };
 
-                    if (result.Result && result.Data != null)
-                    {
-                        await result.Data.WaitForExitAsync();
-                        CurrentSteamCMDInstance = null!;
-                    }
+                process.Exited += (_, _) => tcs.TrySetResult(true);
+
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                // Wait for either the process to exit or 10 seconds to elapse
+                var timeoutTask = Task.Delay(10000);
+                var finishedTask = await Task.WhenAny(tcs.Task, timeoutTask);
+
+                if (finishedTask == timeoutTask)
+                {
+                    Debug.WriteLine("[SteamCMD] Timeout exceeded, assuming login details are incorrect.");
+                    try { process.Kill(); } catch { }
+                    generalResponse.response = ClientResponse.INVALIDPASSWORD;
+                    retry = false;
                 }
-                else
+                else if (retry)
                 {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = GetSteamCMDPath(),
-                        Arguments = $"+login {login.Username} {login.Password} +quit",
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        RedirectStandardInput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    };
-
-                    using var process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-                    CurrentSteamCMDInstance = process;
-
-                    process.OutputDataReceived += (_, e) =>
-                    {
-                        ParseSteamCMDResponse(e.Data, ref generalResponse);
-                        if (generalResponse.response == ClientResponse.RETRY)
-                            retry = true;
-                    };
-
-                    process.Start();
-                    process.BeginOutputReadLine();
-                    process.BeginErrorReadLine();
-
-                    await process.WaitForExitAsync();
-
-                    if (retry)
-                    {
-                        Debug.WriteLine("[SteamCMD] Retry requested. Shutting down and retrying...");
-                        await WaitForSteamCMDExit(); // ensure SteamCMD fully exits
-                    }
-
-                    CurrentSteamCMDInstance = null!;
+                    Debug.WriteLine("[SteamCMD] Retry requested. Shutting down and retrying...");
+                    await WaitForSteamCMDExit();
                 }
 
-            } while (retry); // loop until no retry
+                CurrentSteamCMDInstance = null!;
+
+            } while (retry);
 
             return generalResponse;
         }
+
 
 
         private static void EnsureSteamSetup()

@@ -47,71 +47,66 @@ namespace GPlus.Game.Clients
             return RCON == null ? null : await RCON.SendCommandAsync<Status>("status");
         }
 
-        private static IEnumerable<Process> GetChildProcessesRecursive(Process parent)
+        private string GetCommandLine(Process process)
         {
-            var children = new List<Process>();
-
             try
             {
                 using var searcher = new ManagementObjectSearcher(
-                    $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId = {parent.Id}"
-                );
-
-                foreach (var obj in searcher.Get())
+                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}");
+                foreach (ManagementObject obj in searcher.Get())
                 {
-                    if (obj["ProcessId"] is int pid)
-                    {
-                        try
-                        {
-                            var child = Process.GetProcessById(pid);
-                            children.Add(child);
-                            children.AddRange(GetChildProcessesRecursive(child));
-                        }
-                        catch { /* Ignore missing process */ }
-                    }
+                    return obj["CommandLine"]?.ToString() ?? "";
                 }
             }
-            catch { /* Ignore WMI failures */ }
+            catch { }
+            return "";
+        }
 
+        // Recursively get all child processes
+        private IEnumerable<Process> GetChildProcessesRecursive(int parentId)
+        {
+            var children = new List<Process>();
+            try
+            {
+                using var searcher = new ManagementObjectSearcher(
+                    $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId={parentId}");
+                foreach (ManagementObject mo in searcher.Get())
+                {
+                    int pid = Convert.ToInt32(mo["ProcessId"]);
+                    try
+                    {
+                        var childProc = Process.GetProcessById(pid);
+                        children.Add(childProc);
+                        // Recursively get this child's children
+                        children.AddRange(GetChildProcessesRecursive(pid));
+                    }
+                    catch { /* process may have exited */ }
+                }
+            }
+            catch { }
             return children;
         }
 
-        private static string GetCommandLine(Process process)
-        {
-            try
-            {
-                using var searcher = new ManagementObjectSearcher(
-                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}"
-                );
-
-                foreach (var obj in searcher.Get())
-                    return obj["CommandLine"]?.ToString() ?? string.Empty;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-
-            return string.Empty;
-        }
-
-        private async Task<bool> WaitForSteamLoginAsync(Process steam)
+        private async Task<bool> WaitForSteamLoginAsync(Process steam, int timeoutSeconds = 120)
         {
             Debug.WriteLine($"[Client] Waiting for Steam login for {LoginDetails.Username} (PID {steam.Id})...");
+
+            var sw = Stopwatch.StartNew();
 
             while (!steam.HasExited)
             {
                 try
                 {
-                    foreach (var child in GetChildProcessesRecursive(steam))
+                    foreach (var child in GetChildProcessesRecursive(steam.Id))
                     {
-                        if (!child.ProcessName.Equals("steamwebhelper", StringComparison.OrdinalIgnoreCase))
+                        string cmdLine = GetCommandLine(child);
+                        Debug.WriteLine(cmdLine);
+                        if (string.IsNullOrEmpty(cmdLine))
                             continue;
 
-                        var cmdLine = GetCommandLine(child);
                         if (cmdLine.Contains("--steamid=") && !cmdLine.Contains("--steamid=0"))
                         {
-                            Debug.WriteLine($"[Client] Steam login confirmed for {LoginDetails.Username}.");
+                            Debug.WriteLine($"[Client] Steam login confirmed for {LoginDetails.Username} (PID {child.Id}).");
                             return true;
                         }
                     }
@@ -121,12 +116,19 @@ namespace GPlus.Game.Clients
                     Debug.WriteLine($"[Client] Error scanning child processes: {ex.Message}");
                 }
 
+                if (sw.Elapsed.TotalSeconds > timeoutSeconds)
+                {
+                    Debug.WriteLine($"[Client] Timeout waiting for Steam login for {LoginDetails.Username}.");
+                    return false;
+                }
+
                 await Task.Delay(1000);
             }
 
-            Debug.WriteLine($"[Client] Steam exited before login for {LoginDetails.Username}");
+            Debug.WriteLine($"[Client] Steam process exited before login detected for {LoginDetails.Username}.");
             return false;
         }
+
 
         private async Task CreateRCONConnectionAsync()
         {
@@ -180,7 +182,9 @@ namespace GPlus.Game.Clients
 
                 var processResult = SandboxieWrapper.RunBoxed(
                     SettingsManager.CurrentSettings.General.SteamPath,
-                    $"-login {LoginDetails.Username} {LoginDetails.Password}",
+                    new ProcessStartInfo { 
+                        Arguments =$"-login {LoginDetails.Username} {LoginDetails.Password}"
+                    },
                     Environment.SandboxName
                 );
 
@@ -241,13 +245,6 @@ namespace GPlus.Game.Clients
         {
             LoginDetails = loginDetails;
             Environment = environment;
-
-            Debug.WriteLine($"[Client] Creating client for {loginDetails.Username}");
-
-            Task.Run(async () =>
-            {
-                if (!await InitialiseSteamAsync()) return;
-            });
 
             OnGMODStarted += (_, _) => InitialiseClientLoop();
         }

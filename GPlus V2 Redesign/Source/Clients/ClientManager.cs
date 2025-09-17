@@ -1,32 +1,40 @@
 ﻿using GPlus.GUI.Helpers;
 using GPlus.Source.Enums;
+using GPlus.Source.General;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
+using Newtonsoft.Json;
 using System.Diagnostics;
+using System.Text;
 
 namespace GPlus.Game.Clients
 {
     internal static class ClientManager
     {
         private static readonly List<Client> _clients = new();
+        private static readonly string ClientsPath = $"{Application.StartupPath}Settings\\SavedClients.gplus";
+        public static IReadOnlyList<Client> GetAllClients() => _clients;
 
         private static async Task<bool> HasTwoFactorAuthAsync(Client client)
         {
             var response = await SteamCMD.DoesClientHave2FA(
-                client.LoginDetails,
-                sandboxed: true,
-                sandbox: client.Environment
+                client.LoginDetails
             );
 
-            if (response.response == ClientResponse.AUTHENABLED)
-            {
-                SandboxieManager.DeleteSandbox(client.Environment);
-                Debug.WriteLine($"[Client] {client.LoginDetails.Username} has 2FA enabled, cannot continue.");
-                return true;
-            }
+            Debug.WriteLine("Response: " + response.ToString());
 
-            return false;
+            switch(response.response)
+            {
+                case ClientResponse.AUTHENABLED:
+                    await SandboxieManager.DeleteSandbox(client.Environment);
+                    return true;
+                case ClientResponse.INVALIDPASSWORD:
+                    await SandboxieManager.DeleteSandbox(client.Environment);
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         private async static Task RegisterClient(Client client)
@@ -54,7 +62,12 @@ namespace GPlus.Game.Clients
             var client = new Client(login, environment);
 
             if (await HasTwoFactorAuthAsync(client))
+            {
+                Debug.WriteLine("[CreateClientAsync] Client has 2AUTH");
                 return null;
+            }
+
+            await client.InitialiseSteamAsync();
 
             await RegisterClient(client);
             return client;
@@ -82,8 +95,6 @@ namespace GPlus.Game.Clients
             var encrypted = FileProtection.Protect(json);
             await File.WriteAllTextAsync(ClientsPath, encrypted);
         }
-
-        public static IReadOnlyList<Client> GetAllClients() => _clients;
 
         public static Client? GetClientByUsername(string username) =>
             _clients.FirstOrDefault(c =>

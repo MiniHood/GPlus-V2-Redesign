@@ -24,8 +24,8 @@ namespace GPlus.Source.Sandboxing
 
         private static async void RegisterSandbox(Sandboxie sandboxie, LoginDetails details)
         {
+            Sandboxies.Add(sandboxie);
             await sandboxie.InitialiseAsync(details);
-            Sandboxies.Append(sandboxie);
         }
 
         private static async Task UnregisterSandbox(Sandboxie sandboxie)
@@ -35,81 +35,110 @@ namespace GPlus.Source.Sandboxing
 
         public static async Task DeleteSandbox(Sandboxie sandboxie)
         {
-            // Deleting a sandboxie is as simple as deleting the folder in C:\Sandbox\{sandboxname} and removing the entry from the ini file
-            // Sandboxie has an option to auto delete sandboxes on close, but this is not reliable so we'll do it ourselves
             Settings CurrentSettings = SettingsManager.CurrentSettings;
             if (CurrentSettings == null)
                 throw new Exception("Settings not loaded correctly.");
-            ProcessStartInfo startInfo = new ProcessStartInfo
+
+            var processesResult = SandboxieWrapper.GetBoxedProcesses(sandboxie.SandboxName);
+            if (processesResult.Data != null)
+            {
+                foreach (var proc in processesResult.Data)
+                {
+                    try
+                    {
+                        if (!proc.HasExited)
+                        {
+                            proc.Kill();
+                            await proc.WaitForExitAsync();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[Sandboxie] Failed to kill process {proc.Id}: {ex.Message}");
+                    }
+                }
+            }
+
+            var startInfo = new ProcessStartInfo
             {
                 FileName = CurrentSettings.General.SandboxieBoxCreator,
                 Arguments = $"delete {sandboxie.SandboxName}",
                 UseShellExecute = false,
-                CreateNoWindow = false
+                CreateNoWindow = true
             };
-            using (Process proc = Process.Start(startInfo))
+
+            using (var proc = Process.Start(startInfo))
             {
-                proc.WaitForExit();
+                await proc.WaitForExitAsync();
             }
+
+            if (!SandboxieWrapper.RemoveBox(sandboxie.SandboxName).Data)
+            {
+                while (SandboxieWrapper.IsBoxActive(sandboxie.SandboxName).Data)
+                    await Task.Delay(200);
+
+                SandboxieWrapper.RemoveBox(sandboxie.SandboxName);
+            }
+
             await UnregisterSandbox(sandboxie);
         }
 
+
         public static async Task OnShutdown()
         {
-            foreach (var sandbox in Sandboxies)
+            var queue = new Queue<Sandboxie>(Sandboxies);
+
+            while (queue.Count > 0)
             {
+                var sandbox = queue.Dequeue();
                 await DeleteSandbox(sandbox);
             }
         }
 
-        public static Sandboxie CreateNewSandbox(LoginDetails loginDetails)
+        public static async Task<Sandboxie> CreateNewSandboxAsync(LoginDetails loginDetails)
         {
             // Null check rq
-            Settings CurrentSettings = SettingsManager.CurrentSettings;
-            if (CurrentSettings == null)
-                throw new Exception("Settings not loaded correctly.");
+            Settings currentSettings = SettingsManager.CurrentSettings
+                ?? throw new Exception("Settings not loaded correctly.");
 
-            // Lets now create the actual sandboxie, only way to do it is either through files or letting the sandboxie creator do it for us, probably safer to give it to teh creator
-            // Steam doesn't allow 2 of the same usernames so we'll use that as the sandbox name
-            // Remember kids, creating a box doesn't actually launch anything, it just writes to the ini file
-
-            List<string> SandboxieArguments = new List<string>
+            // Build arguments list
+            List<string> sandboxieArguments = new List<string>
             {
-                SettingsManager.CurrentSettings.BoxCreation.ConfigLevel,
-                SettingsManager.CurrentSettings.BoxCreation.Enabled,
-                SettingsManager.CurrentSettings.BoxCreation.BoxName,
-                SettingsManager.CurrentSettings.BoxCreation.PromptForFileMigration,
-                SettingsManager.CurrentSettings.BoxCreation.Template,
-                SettingsManager.CurrentSettings.BoxCreation.AutoDelete,
-                SettingsManager.CurrentSettings.BoxCreation.AutoRecover,
-                SettingsManager.CurrentSettings.BoxCreation.CopyLimitKb,
-                SettingsManager.CurrentSettings.BoxCreation.Template,
+                currentSettings.BoxCreation.ConfigLevel,
+                currentSettings.BoxCreation.Enabled,
+                currentSettings.BoxCreation.BoxName,
+                currentSettings.BoxCreation.PromptForFileMigration,
+                currentSettings.BoxCreation.Template,
+                currentSettings.BoxCreation.AutoDelete,
+                currentSettings.BoxCreation.AutoRecover,
+                currentSettings.BoxCreation.CopyLimitKb,
+                currentSettings.BoxCreation.Template,
             };
 
-
-            foreach (var arg in SandboxieArguments)
+            foreach (var arg in sandboxieArguments)
             {
                 if (arg == null)
                     throw new Exception("One or more Sandboxie box creation settings are null, please check your settings file.");
 
-                ProcessStartInfo startInfo = new ProcessStartInfo
+                var startInfo = new ProcessStartInfo
                 {
-                    FileName = CurrentSettings.General.SandboxieBoxCreator,
+                    FileName = currentSettings.General.SandboxieBoxCreator,
                     Arguments = $"set {loginDetails.Username} {arg}",
                     UseShellExecute = false,
-                    CreateNoWindow = false // could turn this on but then the user wouldn't get any noticable feedback, users may find it more satisfying to see the window pop up
+                    CreateNoWindow = false
                 };
 
-                using (Process proc = Process.Start(startInfo))
+                using (var proc = Process.Start(startInfo))
                 {
-                    proc.WaitForExit();
+                    if (proc != null)
+                        await proc.WaitForExitAsync(); // async instead of blocking
                 }
             }
 
-
-            Sandboxie NewSandbox = new Sandboxie(loginDetails.Username);
-            RegisterSandbox(NewSandbox, loginDetails);
-            return NewSandbox;
+            var newSandbox = new Sandboxie(loginDetails.Username);
+            RegisterSandbox(newSandbox, loginDetails);
+            return newSandbox;
         }
+
     }
 }

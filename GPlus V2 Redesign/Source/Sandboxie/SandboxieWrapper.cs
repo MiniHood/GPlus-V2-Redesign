@@ -694,64 +694,15 @@ public abstract class SandboxieWrapper
         }
     }
 
-    public static SB_RESULT<Process?> RunBoxedWithRedirect(
+
+    public static SB_RESULT<Process?> RunBoxed(
         string filePath,
-        string? arguments = null,
-        string boxName = "DefaultBox",
-        Action<string>? onOutput = null
-    )
+        ProcessStartInfo startInfo,
+        string boxName = "DefaultBox")
     {
         if (!IsSbieExists().Result)
             return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
                 "Sandboxie path does not exist");
-
-        if (!File.Exists(filePath))
-            return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_NOT_EXISTS, false, null,
-                "File does not exist");
-
-        CreatePipe(out var hRead, out var hWrite, IntPtr.Zero, 0);
-        SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0);
-
-        Api.STARTUPINFO startupInfo = new();
-        startupInfo.cb = Marshal.SizeOf(startupInfo);
-        startupInfo.dwFlags = STARTF_USESTDHANDLES;
-        startupInfo.hStdOutput = hWrite.DangerousGetHandle();
-        startupInfo.hStdError = hWrite.DangerousGetHandle();
-        startupInfo.hStdInput = IntPtr.Zero;
-
-        string cmdLine = arguments != null ? $"{filePath} {arguments}" : filePath;
-
-        var startResult = Api.RunSandboxed(boxName, cmdLine, SbiePath, 0, ref startupInfo, out var processInfo);
-
-        if (!startResult)
-            return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
-                "Failed to start sandboxed process");
-
-        hWrite.Close();
-
-        var reader = new StreamReader(new FileStream(hRead, FileAccess.Read));
-        var proc = Process.GetProcessById((int)processInfo.dwProcessId);
-
-        // Kick off async reading
-        _ = Task.Run(async () =>
-        {
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
-            {
-                if (onOutput != null)
-                    onOutput(line);
-            }
-        });
-
-        return new SB_RESULT<Process?>(SB_STATUS.SB_OK, true, proc);
-    }
-
-
-    public static SB_RESULT<Process?> RunBoxed(string filePath, string? arguments = null, string boxName = "DefaultBox")
-    {
-        if (!IsSbieExists().Result)
-            return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
-                "Boxed launching was not completed because Sandboxie path does not exist");
 
         if (!File.Exists(filePath))
             return new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_NOT_EXISTS, false, null,
@@ -760,16 +711,25 @@ public abstract class SandboxieWrapper
         Api.STARTUPINFO startupInfo = new();
         startupInfo.cb = Marshal.SizeOf(startupInfo);
 
-        // Pass the arguments (or null if none)
-        string cmdLine = arguments != null ? $"{filePath} {arguments}" : filePath;
+        // Build command line from startInfo
+        string cmdLine = $"{filePath} {startInfo.Arguments}".Trim();
+
+        // Optional: set working directory if provided
+        if (!string.IsNullOrEmpty(startInfo.WorkingDirectory))
+        {
+            // Sandboxie API doesn't have a direct working directory option
+            // One way is to prepend "cd" command in arguments or ensure the process itself handles it
+            cmdLine = $"cmd /C cd /D \"{startInfo.WorkingDirectory}\" && {cmdLine}";
+        }
 
         var startResult = Api.RunSandboxed(boxName, cmdLine, SbiePath, 0, ref startupInfo, out var processInfo);
 
-        return startResult ?
-            new SB_RESULT<Process?>(SB_STATUS.SB_OK, true, Process.GetProcessById((int)processInfo.dwProcessId)) :
-            new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
+        return startResult
+            ? new SB_RESULT<Process?>(SB_STATUS.SB_OK, true, Process.GetProcessById((int)processInfo.dwProcessId))
+            : new SB_RESULT<Process?>(SB_STATUS.SB_RUN_BOXED_ERROR, false, null,
                 "Failed to start sandboxed process");
     }
+
 
 
     public static SB_RESULT<List<Process>?> GetBoxedProcesses(string boxName = "DefaultBox")
@@ -1488,7 +1448,7 @@ public abstract class SandboxieWrapper
         {
             return Configuration is null && Enabled is false ?
                 new(SB_STATUS.SB_BOX_NO_ANY_CONFIGURATION, false, null, "Can't run in box because required configuration was not detected or box has false enabled param") :
-                RunBoxed(filePath, Name);
+                RunBoxed(filePath, new ProcessStartInfo { }, boxName: Name);
         }
 
         public SB_RESULT<bool> Create()
