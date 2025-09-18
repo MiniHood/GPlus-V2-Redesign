@@ -93,6 +93,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(TargetDir)..\..\GPlus V2 Redesign\bin\Debug\net8.0-windows" mkdir "$(TargetDir)..\..\GPlus V2 Redesign\bin\Debug\net8.0-windows"
+copy /Y "$(TargetDir)$(TargetName).dll" "$(TargetDir)..\..\GPlus V2 Redesign\bin\Debug\net8.0-windows"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -126,6 +131,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /Y /I "$(TargetDir)$(TargetName).dll" "$(SolutionDir)GPlus V2 Redesign\bin\Debug\net8.0-windows\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
