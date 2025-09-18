@@ -30,9 +30,9 @@
         {
             _ctrlControlBox = new ReaLTaiizor.Controls.NightControlBox();
             _ucNavBar = new GPlus.GUI.Elements.NavBar();
+            _ucServers = new GPlus.GUI.Elements.Servers();
             _ucClients = new GPlus.GUI.Elements.Clients();
             _ucDashboard = new GPlus.GUI.Elements.Dashboard();
-            _ucServers = new GPlus.GUI.Elements.Servers();
             _ucSettings = new GPlus.GUI.Elements.Settings();
             _ucSetup = new GPlus.GUI.Elements.Setup();
             _ucShuttingDown = new GPlus.GUI.Elements.ShuttingDown();
@@ -64,27 +64,10 @@
             // _ucNavBar
             // 
             _ucNavBar.BackColor = Color.FromArgb(26, 26, 26);
-            _ucNavBar.Dock = DockStyle.Left;
             _ucNavBar.Location = new Point(0, 0);
             _ucNavBar.Name = "_ucNavBar";
             _ucNavBar.Size = new Size(150, 464);
-            _ucNavBar.TabIndex = 3;
-            // 
-            // _ucClients
-            // 
-            _ucClients.BackColor = Color.FromArgb(26, 26, 26);
-            _ucClients.Location = new Point(153, 37);
-            _ucClients.Name = "_ucClients";
-            _ucClients.Size = new Size(599, 427);
-            _ucClients.TabIndex = 4;
-            // 
-            // _ucDashboard
-            // 
-            _ucDashboard.BackColor = Color.FromArgb(26, 26, 26);
-            _ucDashboard.Location = new Point(153, 37);
-            _ucDashboard.Name = "_ucDashboard";
-            _ucDashboard.Size = new Size(599, 427);
-            _ucDashboard.TabIndex = 5;
+            _ucNavBar.TabIndex = 0;
             // 
             // _ucServers
             // 
@@ -92,15 +75,31 @@
             _ucServers.Location = new Point(153, 37);
             _ucServers.Name = "_ucServers";
             _ucServers.Size = new Size(599, 427);
-            _ucServers.TabIndex = 6;
+            _ucServers.TabIndex = 3;
+            // 
+            // _ucClients
+            // 
+            _ucClients.BackColor = Color.FromArgb(26, 26, 26);
+            _ucClients.Location = new Point(153, 37);
+            _ucClients.Name = "_ucClients";
+            _ucClients.Size = new Size(599, 427);
+            _ucClients.TabIndex = 1;
+            // 
+            // _ucDashboard
+            // 
+            _ucDashboard.BackColor = Color.FromArgb(26, 26, 26);
+            _ucDashboard.Location = new Point(0, 0);
+            _ucDashboard.Name = "_ucDashboard";
+            _ucDashboard.Size = new Size(599, 427);
+            _ucDashboard.TabIndex = 0;
             // 
             // _ucSettings
             // 
             _ucSettings.BackColor = Color.FromArgb(26, 26, 26);
-            _ucSettings.Location = new Point(153, 37);
+            _ucSettings.Location = new Point(156, 37);
             _ucSettings.Name = "_ucSettings";
             _ucSettings.Size = new Size(599, 427);
-            _ucSettings.TabIndex = 7;
+            _ucSettings.TabIndex = 4;
             // 
             // _ucSetup
             // 
@@ -108,16 +107,16 @@
             _ucSetup.Location = new Point(0, 37);
             _ucSetup.Name = "_ucSetup";
             _ucSetup.Size = new Size(752, 427);
-            _ucSetup.TabIndex = 8;
+            _ucSetup.TabIndex = 2;
+            _ucSetup.Visible = false;
             // 
             // _ucShuttingDown
             // 
             _ucShuttingDown.BackColor = Color.FromArgb(26, 26, 26);
-            _ucShuttingDown.Location = new Point(0, 37);
+            _ucShuttingDown.Location = new Point(3, 37);
             _ucShuttingDown.Name = "_ucShuttingDown";
             _ucShuttingDown.Size = new Size(752, 427);
-            _ucShuttingDown.TabIndex = 9;
-            _ucShuttingDown.Visible = false;
+            _ucShuttingDown.TabIndex = 5;
             // 
             // Home
             // 
@@ -125,14 +124,13 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
             ClientSize = new Size(752, 464);
+            Controls.Add(_ucNavBar);
+            Controls.Add(_ctrlControlBox);
+            Controls.Add(_ucServers);
+            Controls.Add(_ucSettings);
             Controls.Add(_ucShuttingDown);
             Controls.Add(_ucSetup);
             Controls.Add(_ucClients);
-            Controls.Add(_ucNavBar);
-            Controls.Add(_ctrlControlBox);
-            Controls.Add(_ucSettings);
-            Controls.Add(_ucServers);
-            Controls.Add(_ucDashboard);
             FormBorderStyle = FormBorderStyle.None;
             MaximumSize = new Size(1920, 1032);
             Name = "Home";
