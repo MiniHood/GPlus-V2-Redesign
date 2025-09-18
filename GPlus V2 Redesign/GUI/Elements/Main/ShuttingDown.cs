@@ -30,12 +30,13 @@ namespace GPlus.GUI.Elements
             if (ShutdownComplete)
                 return;
 
-            UserControlLoader.ShuttingDown.Visible = true;
-            UserControlLoader.ShuttingDown.BringToFront();
+            UserControlLoader.ShuttingDown.Invoke(new Action(() => UserControlLoader.ShuttingDown.Show()));
+            UserControlLoader.ShuttingDown.Invoke(new Action(() => UserControlLoader.ShuttingDown.BringToFront()));
 
             if (SteamCMD.CurrentSteamCMDInstance != null)
             {
-                Instance._lblFeedback.Text = "Shutting SteamCMD down.";
+
+                Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Shutting SteamCMD down." ));
                 // Attempt to stop recovery loops, but if it doesn't end in time, force close it and clear logs
                 // to avoid recovery loops on next startup.
 
@@ -48,7 +49,7 @@ namespace GPlus.GUI.Elements
 
                     if (TickCount > 10)
                     {
-                        Instance._lblFeedback.Text = "Forcing SteamCMD shutdown.";
+                        Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Forcing SteamCMD Shutdown."));
                         SteamCMD.ForceStopSteamCMD();
                         break;
                     }
@@ -57,12 +58,12 @@ namespace GPlus.GUI.Elements
                 }
             }
 
-            Instance._lblFeedback.Text = "Shutting down Sandboxies.";
+            Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Shutting down Sandboxies."));
             await SandboxieManager.OnShutdown();
-            Instance._lblFeedback.Text = "Shutting down clients.";
+            Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Shutting down clients."));
             await ClientManager.OnShutdown();
 
-            Instance._lblFeedback.Text = "Shutdown complete.";
+            Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Shutdown complete."));
             await Task.Delay(1000);
 
             ShutdownComplete = true;
