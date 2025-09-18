@@ -158,8 +158,8 @@ namespace GPlus.Game.Clients
                 _steam = processResult.Data;
                 Debug.WriteLine($"[Client] Steam launched (PID {_steam.Id}) for {LoginDetails.Username}");
 
-                if (!await WaitForSteamLoginAsync(_steam))
-                    return false;
+                while (!await WaitForSteamLoginAsync(_steam))
+                    await Task.Delay(1000);
 
                 OnSteamStarted?.Invoke(this, EventArgs.Empty);
                 return true;
