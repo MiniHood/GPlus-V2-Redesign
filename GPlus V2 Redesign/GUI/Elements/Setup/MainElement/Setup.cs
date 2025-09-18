@@ -97,11 +97,6 @@ namespace GPlus.GUI.Elements
             }
             #endregion
 
-            #region Load Clients
-            ChangeLabelText("Loading saved clients...");
-            await ClientManager.LoadSavedClients();
-            #endregion
-
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = false));
 
@@ -111,6 +106,11 @@ namespace GPlus.GUI.Elements
                 _ucSetupAccount.Invoke(new Action(() => _ucSetupAccount.BringToFront()));
                 return true; // hand off to set up account uc
             }
+
+            #region Load Clients
+            ChangeLabelText("Loading saved clients...");
+            await ClientManager.LoadSavedClients();
+            #endregion
 
             ChangeLabelText("Initialization Complete!");
             await Task.Delay(1000);
