@@ -28,12 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            ListViewGroup listViewGroup2 = new ListViewGroup("Unconnected", HorizontalAlignment.Center);
-            ListViewItem listViewItem2 = new ListViewItem("ummmmmmmmmp");
+            ListViewGroup listViewGroup1 = new ListViewGroup("Unconnected", HorizontalAlignment.Center);
+            ListViewItem listViewItem1 = new ListViewItem("ummmmmmmmmp");
             _listClients = new ReaLTaiizor.Controls.PoisonListView();
             _listColumn = new ColumnHeader();
             _btnCreateClient = new ReaLTaiizor.Controls.ParrotButton();
             _ucCreateClient = new CreateClient();
+            clientControls1 = new GPlus.GUI.Elements.Client.Popups.ClientControls();
             SuspendLayout();
             // 
             // _listClients
@@ -45,12 +46,12 @@
             _listClients.Font = new Font("Segoe UI", 12F);
             _listClients.ForeColor = Color.White;
             _listClients.FullRowSelect = true;
-            listViewGroup2.Header = "Unconnected";
-            listViewGroup2.HeaderAlignment = HorizontalAlignment.Center;
-            listViewGroup2.Name = "_listUnconnected";
-            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup2 });
+            listViewGroup1.Header = "Unconnected";
+            listViewGroup1.HeaderAlignment = HorizontalAlignment.Center;
+            listViewGroup1.Name = "_listUnconnected";
+            _listClients.Groups.AddRange(new ListViewGroup[] { listViewGroup1 });
             _listClients.HideSelection = true;
-            _listClients.Items.AddRange(new ListViewItem[] { listViewItem2 });
+            _listClients.Items.AddRange(new ListViewItem[] { listViewItem1 });
             _listClients.Location = new Point(428, 0);
             _listClients.Name = "_listClients";
             _listClients.OwnerDraw = true;
@@ -95,11 +96,20 @@
             _ucCreateClient.TabIndex = 9;
             _ucCreateClient.Visible = false;
             // 
+            // clientControls1
+            // 
+            clientControls1.BackColor = Color.FromArgb(26, 26, 26);
+            clientControls1.Location = new Point(3, 0);
+            clientControls1.Name = "clientControls1";
+            clientControls1.Size = new Size(422, 427);
+            clientControls1.TabIndex = 10;
+            // 
             // Clients
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
+            Controls.Add(clientControls1);
             Controls.Add(_ucCreateClient);
             Controls.Add(_btnCreateClient);
             Controls.Add(_listClients);
@@ -114,5 +124,6 @@
         private ColumnHeader _listColumn;
         private ReaLTaiizor.Controls.ParrotButton _btnCreateClient;
         private CreateClient _ucCreateClient;
+        private Client.Popups.ClientControls clientControls1;
     }
 }
