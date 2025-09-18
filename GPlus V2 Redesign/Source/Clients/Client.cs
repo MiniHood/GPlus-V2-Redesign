@@ -144,7 +144,7 @@ namespace GPlus.Game.Clients
                 var processResult = SandboxieWrapper.RunBoxed(
                     SettingsManager.CurrentSettings.General.SteamPath,
                     new ProcessStartInfo { 
-                        Arguments =$"-login {LoginDetails.Username} {LoginDetails.Password}"
+                        Arguments =$"-login {LoginDetails.Username} {LoginDetails.Password} -silent -nobootstrapupdate -nocrashdialog -noverifyfiles"
                     },
                     Environment.SandboxName
                 );
