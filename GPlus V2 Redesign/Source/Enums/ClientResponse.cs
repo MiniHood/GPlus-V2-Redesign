@@ -8,5 +8,6 @@
         SUCCESSFUL = 3,
         UNKNOWNERROR = 4,
         RETRY = 5,
+        UNKNOWN = 6,
     }
 }
