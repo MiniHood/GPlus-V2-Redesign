@@ -197,6 +197,100 @@ namespace GPlus.Game.Clients
             }
         }
 
+
+        private async Task SetupGMODCommunication()
+        {
+            await GMOD.Initialize();
+
+            // Inject dll
+            if (!Memory.InjectDll(GMOD.Process.Id, "Communication.dll"))
+            {
+                await GMOD.OnShutdown();
+                throw new Exception("Failed to inject");
+            }
+
+            if(!await GMOD.Ping())
+            {
+                await GMOD.OnShutdown();
+                throw new Exception("Failed to ping");
+            }
+
+            Debug.WriteLine("Setup GMOD Communication");
+        }
+
+        private async Task SearchForGMOD()
+        {
+            while (true)
+            {
+                var sbResult = SandboxieWrapper.GetBoxedProcesses(Environment.SandboxName);
+                var list = sbResult.Data;
+
+                if (list == null)
+                    throw new Exception($"Could not retrieve box processes for {Environment.SandboxName}");
+
+                foreach (var parent in list)
+                {
+                    try
+                    {
+                        Debug.WriteLine($"[SearchForGMOD] Checking sandboxed parent {parent.ProcessName} ({parent.Id})");
+
+                        foreach (var child in ProcessHelpers.GetChildProcessesRecursive(parent.Id))
+                        {
+                            try
+                            {
+                                Debug.WriteLine($"[SearchForGMOD] └─ Child {child.ProcessName} ({child.Id})");
+
+                                if (child.ProcessName.Equals("gmod", StringComparison.OrdinalIgnoreCase) &&
+                                    child.MainWindowHandle != IntPtr.Zero)
+                                {
+                                    GMOD.Process = child;
+                                    _gmod = child;
+                                    Debug.WriteLine($"[SearchForGMOD] Found GMOD (PID {child.Id})");
+                                    await SetupGMODCommunication();
+                                    return;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Debug.WriteLine($"[SearchForGMOD] Failed to inspect child: {ex.Message}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[SearchForGMOD] Failed to inspect parent: {ex.Message}");
+                    }
+                }
+
+                await Task.Delay(250);
+            }
+        }
+
+
+
+
+        public async Task StartGMODAsync()
+        {
+            while(true)
+            {
+                bool Found = false;
+                foreach (var child in ProcessHelpers.GetChildProcessesRecursive(_steam.Id))
+                {
+                    string cmdline = ProcessHelpers.GetCommandLine(child);
+                    if (cmdline.ToLower().Contains("--type=renderer") && cmdline.ToLower().Contains("--user-data-dir"))
+                    {
+                        Found = true;
+                        break;
+                    }
+                    Debug.WriteLine($"Checking {child.Id} for specific arguments.");
+                }
+
+                if (Found)
+                    break;
+
+                await Task.Delay(300);
+        }
+
         public void SetGMOD(uint processId) => _gmod = Process.GetProcessById((int)processId);
 
         public bool IsSteamOpen() => _steam != null && !_steam.HasExited;
