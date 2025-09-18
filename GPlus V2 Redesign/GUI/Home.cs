@@ -38,6 +38,8 @@ namespace GPlus
         private void Home_Load(object sender, EventArgs e)
         {
             if (DesignMode) return; // why microsoft... Why?
+            _ucSetup.BringToFront();
+            _ucSetup.Show();
         }
 
         private void Home_MouseDown(object sender, MouseEventArgs e)
@@ -57,6 +59,11 @@ namespace GPlus
                 await ShuttingDown.OnProcessExit();
             }
             return;
+        }
+
+        private void _ucClients_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
