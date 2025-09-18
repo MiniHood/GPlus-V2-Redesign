@@ -72,13 +72,7 @@ namespace GPlus.Source.Sandboxing
                 await proc.WaitForExitAsync();
             }
 
-            if (!SandboxieWrapper.RemoveBox(sandboxie.SandboxName).Data)
-            {
-                while (SandboxieWrapper.IsBoxActive(sandboxie.SandboxName).Data)
-                    await Task.Delay(200);
-
                 SandboxieWrapper.RemoveBox(sandboxie.SandboxName);
-            }
 
             await UnregisterSandbox(sandboxie);
         }
