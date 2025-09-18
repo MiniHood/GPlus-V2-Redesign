@@ -24,7 +24,6 @@ namespace GPlus.GUI.Elements
             if (response.response == ClientResponse.SUCCESSFUL)
             {
                 SteamCMD.OnSteamCMDResponseUpdated -= DownloadProgressChange;
-                SetupAccount.Instance.Dispose();
                 return;
             }
 
