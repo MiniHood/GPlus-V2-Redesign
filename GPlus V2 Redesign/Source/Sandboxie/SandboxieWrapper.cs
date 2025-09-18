@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
@@ -755,7 +756,14 @@ public abstract class SandboxieWrapper
             if (boxedCounter == 0)
                 return new SB_RESULT<List<Process>?>(SB_STATUS.SB_OK, true, null);
 
-            processes.AddRange(boxedPiDs.Select(boxedPid => Process.GetProcessById((int)boxedPid)));
+            try
+            {
+                processes.AddRange(boxedPiDs.Select(boxedPid => Process.GetProcessById((int)boxedPid)));
+            }
+            catch (Exception ex)
+            {
+
+            }
 
             return new SB_RESULT<List<Process>?>(SB_STATUS.SB_OK, true, processes);
         }

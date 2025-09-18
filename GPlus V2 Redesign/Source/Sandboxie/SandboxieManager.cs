@@ -72,7 +72,7 @@ namespace GPlus.Source.Sandboxing
                 await proc.WaitForExitAsync();
             }
 
-                SandboxieWrapper.RemoveBox(sandboxie.SandboxName);
+            SandboxieWrapper.RemoveBox(sandboxie.SandboxName);
 
             await UnregisterSandbox(sandboxie);
         }

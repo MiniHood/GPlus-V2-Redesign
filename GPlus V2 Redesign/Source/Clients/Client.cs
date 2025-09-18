@@ -5,10 +5,13 @@ using GPlus.Source.General;
 using GPlus.Source.GMOD;
 using GPlus.Source.Interprocess;
 using GPlus.Source.Sandboxing;
+using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using System.Diagnostics;
 using System.Management;
 using System.Net;
+using static SandboxieWrapper;
+
 
 namespace GPlus.Game.Clients
 {
@@ -290,7 +293,7 @@ namespace GPlus.Game.Clients
                     break;
 
                 await Task.Delay(300);
-        }
+            }
 
             var startInfo = new ProcessStartInfo
             {
