@@ -96,7 +96,7 @@ namespace GPlus.Source.Steam
             {
                 Data = null,
                 Progress = null,
-                response = ClientResponse.SUCCESSFUL
+                response = ClientResponse.UNKNOWN
             };
 
             bool retry;
