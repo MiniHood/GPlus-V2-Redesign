@@ -17,7 +17,7 @@ namespace GPlus.Source.Steam
             File.Exists(Path.Combine("SteamCMD", "steamcmd.exe"));
 
         public static bool IsGMODInstalled() =>
-            Directory.Exists(Path.Combine("SteamCMD", "GMOD"));
+            Directory.Exists(Path.Combine("SteamCMD", "gmod"));
 
         public static async Task<bool> UnzipSteamClient()
         {
