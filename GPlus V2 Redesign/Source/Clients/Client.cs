@@ -291,7 +291,27 @@ namespace GPlus.Game.Clients
                 await Task.Delay(300);
         }
 
-        public void SetGMOD(uint processId) => _gmod = Process.GetProcessById((int)processId);
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = $"{Application.StartupPath}SteamCMD\\steamcmd.exe",
+                Arguments =
+                    $"+force_install_dir {Application.StartupPath}SteamCMD\\gmod " +
+                    $"+login {LoginDetails.Username} {LoginDetails.Password} " +
+                    "+app_run 4000 " +
+                    $"{SettingsManager.CurrentSettings.General.GMODLaunchArguments}",
+                CreateNoWindow = true,
+            };
+
+            var b_RESULT = SandboxieWrapper.RunBoxed($"{Application.StartupPath}SteamCMD\\steamcmd.exe", startInfo, Environment.SandboxName);
+            if (b_RESULT.Data == null)
+                throw new Exception("Failed to get GMOD process from Sandboxie");
+
+            Process proc = b_RESULT.Data;
+
+            // Wait for GMOD to start inside SteamCMD
+            await SearchForGMOD();
+        }
+
 
         public bool IsSteamOpen() => _steam != null && !_steam.HasExited;
         public bool IsGMODOpen() => _gmod != null && !_gmod.HasExited;
@@ -300,8 +320,8 @@ namespace GPlus.Game.Clients
         {
             LoginDetails = loginDetails;
             Environment = environment;
-
-            OnGMODStarted += (_, _) => InitialiseClientLoop();
+            OnSteamStarted += (_, _) => StartGMODAsync();
+            //OnGMODStarted += (_, _) => InitialiseClientLoop();
         }
 
         public void Dispose()
