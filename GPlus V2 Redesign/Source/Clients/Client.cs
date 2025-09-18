@@ -47,45 +47,6 @@ namespace GPlus.Game.Clients
             return RCON == null ? null : await RCON.SendCommandAsync<Status>("status");
         }
 
-        private string GetCommandLine(Process process)
-        {
-            try
-            {
-                using var searcher = new ManagementObjectSearcher(
-                    $"SELECT CommandLine FROM Win32_Process WHERE ProcessId = {process.Id}");
-                foreach (ManagementObject obj in searcher.Get())
-                {
-                    return obj["CommandLine"]?.ToString() ?? "";
-                }
-            }
-            catch { }
-            return "";
-        }
-
-        // Recursively get all child processes
-        private IEnumerable<Process> GetChildProcessesRecursive(int parentId)
-        {
-            var children = new List<Process>();
-            try
-            {
-                using var searcher = new ManagementObjectSearcher(
-                    $"SELECT ProcessId FROM Win32_Process WHERE ParentProcessId={parentId}");
-                foreach (ManagementObject mo in searcher.Get())
-                {
-                    int pid = Convert.ToInt32(mo["ProcessId"]);
-                    try
-                    {
-                        var childProc = Process.GetProcessById(pid);
-                        children.Add(childProc);
-                        // Recursively get this child's children
-                        children.AddRange(GetChildProcessesRecursive(pid));
-                    }
-                    catch { /* process may have exited */ }
-                }
-            }
-            catch { }
-            return children;
-        }
 
         private async Task<bool> WaitForSteamLoginAsync(Process steam, int timeoutSeconds = 120)
         {
@@ -97,9 +58,9 @@ namespace GPlus.Game.Clients
             {
                 try
                 {
-                    foreach (var child in GetChildProcessesRecursive(steam.Id))
+                    foreach (var child in ProcessHelpers.GetChildProcessesRecursive(steam.Id))
                     {
-                        string cmdLine = GetCommandLine(child);
+                        string cmdLine = ProcessHelpers.GetCommandLine(child);
                         Debug.WriteLine(cmdLine);
                         if (string.IsNullOrEmpty(cmdLine))
                             continue;
