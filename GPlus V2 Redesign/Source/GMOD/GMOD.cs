@@ -95,7 +95,12 @@ namespace GPlus.Source.GMOD
 
         public void Shutdown() // quit gmod
         {
-            return;
+            // Send quit request to DLL if needed
+            _ = SendRequestAsync(new GMODRequest
+            {
+                Type = GMODRequestTypes.QUIT,
+                ExpectResponse = false
+            });
         }
     }
 }
