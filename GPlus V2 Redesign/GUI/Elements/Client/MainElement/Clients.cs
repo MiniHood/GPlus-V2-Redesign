@@ -1,4 +1,7 @@
-﻿namespace GPlus.GUI.Elements
+﻿using GPlus.Game.Clients;
+using GPlus.GUI.Elements.Client.Popups;
+
+namespace GPlus.GUI.Elements
 {
     public partial class Clients : UserControl
     {
@@ -79,6 +82,31 @@
         {
             _ucCreateClient.BringToFront();
             _ucCreateClient.Show();
+        }
+
+        private void UpdateClientControlsUI()
+        {
+            if (_ucClientControls.InvokeRequired)
+            {
+                _ucClientControls.Invoke(() => _ucClientControls.RefreshUI());
+            }
+            else
+            {
+                _ucClientControls.RefreshUI();
+            }
+        }
+
+        private void _listClients_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_listClients.SelectedItems.Count == 0)
+                return;
+
+            var selectedItem = _listClients.SelectedItems[0];
+            if (selectedItem.Tag is Game.Clients.Client client)
+            {
+                ClientControls.SelectedClient = client;
+                UpdateClientControlsUI();
+            }
         }
     }
 }
