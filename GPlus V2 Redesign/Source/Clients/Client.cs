@@ -1,6 +1,4 @@
-﻿using CoreRCON;
-using CoreRCON.Parsers.Standard;
-using GPlus.Game.Servers;
+﻿using GPlus.Game.Servers;
 using GPlus.Source.General;
 using GPlus.Source.GMOD;
 using GPlus.Source.Interprocess;
@@ -21,7 +19,6 @@ namespace GPlus.Game.Clients
         public Server? ConnectedServer { get; private set; }
         public Sandboxie Environment { get; }
         public ushort RCONPort { get; private set; }
-        public RCON? RCON { get; private set; }
         public GMOD GMOD { get; set; } = new();
 
         public bool IsConnected => ConnectedServer != null;
@@ -33,23 +30,6 @@ namespace GPlus.Game.Clients
         private Process? _gmod;
 
         #region Private Methods
-
-        private void Connect()
-        {
-            if (RCON?.Connected == true && ConnectedServer != null)
-                RCON.SendCommandAsync($"connect {ConnectedServer.IP}");
-        }
-
-        private void Disconnect()
-        {
-            if (RCON?.Connected == true)
-                RCON.SendCommandAsync("disconnect");
-        }
-
-        private async Task<Status?> GetCurrentStatusAsync()
-        {
-            return RCON == null ? null : await RCON.SendCommandAsync<Status>("status");
-        }
 
 
         private async Task<bool> WaitForSteamLoginAsync(Process steam, int timeoutSeconds = 120)
@@ -92,47 +72,6 @@ namespace GPlus.Game.Clients
 
             Debug.WriteLine($"[Client] Steam process exited before login detected for {LoginDetails.Username}.");
             return false;
-        }
-
-
-        private async Task CreateRCONConnectionAsync()
-        {
-            RCON = new RCON(
-                IPAddress.Loopback,
-                RCONPort,
-                SettingsManager.CurrentSettings.General.RCONPassword
-            );
-
-            await RCON.ConnectAsync();
-            Environment.RconConnection = RCON;
-        }
-
-        private void InitialiseClientLoop() => Task.Run(ClientLoop);
-
-        private async Task ClientLoop()
-        {
-            Debug.WriteLine($"[Client] Starting client loop for {LoginDetails.Username}");
-
-            while (_steam != null && !_steam.HasExited && _gmod != null && !_gmod.HasExited)
-            {
-                if (RCON == null)
-                {
-                    await CreateRCONConnectionAsync();
-                    await Task.Delay(10000);
-                    continue;
-                }
-
-                if (ConnectedServer != null)
-                {
-                    var status = await GetCurrentStatusAsync();
-                    if (status == null || string.IsNullOrEmpty(status.PublicHost) || !status.PublicHost.Contains(ConnectedServer.IP))
-                        Connect();
-                }
-
-                await Task.Delay(5000);
-            }
-
-            Debug.WriteLine($"[Client] Exiting client loop for {LoginDetails.Username}");
         }
 
         #endregion
@@ -182,45 +121,22 @@ namespace GPlus.Game.Clients
             _steam.Dispose();
         }
 
-        public void StopGMOD()
-        {
-            if (_gmod == null || _gmod.HasExited || _steam == null || _steam.HasExited) return;
 
+        private void SetupGMODCommunication()
+        {
             try
             {
-                if (RCON?.Connected == true)
-                    RCON.SendCommandAsync("quit");
-
-                RCON?.Dispose();
-                _gmod.Close();
+                Task.Run(() =>
+                {
+                    Memory.InjectDll((uint)GMOD.Process.Id, "Communication.dll");
+                });
             }
-            catch { /* Ignore */ }
-            finally
+            catch (Exception ex)
             {
-                _gmod?.Dispose();
+                Debug.WriteLine($"SetupGMODCommunication exception: {ex.Message}");
             }
         }
 
-
-        private async Task SetupGMODCommunication()
-        {
-            await GMOD.Initialize();
-
-            // Inject dll
-            if (!Memory.InjectDll(GMOD.Process.Id, "Communication.dll"))
-            {
-                await GMOD.OnShutdown();
-                throw new Exception("Failed to inject");
-            }
-
-            if(!await GMOD.Ping())
-            {
-                await GMOD.OnShutdown();
-                throw new Exception("Failed to ping");
-            }
-
-            Debug.WriteLine("Setup GMOD Communication");
-        }
 
         private async Task SearchForGMOD()
         {
@@ -250,7 +166,7 @@ namespace GPlus.Game.Clients
                                     GMOD.Process = child;
                                     _gmod = child;
                                     Debug.WriteLine($"[SearchForGMOD] Found GMOD (PID {child.Id})");
-                                    await SetupGMODCommunication();
+                                    SetupGMODCommunication();
                                     return;
                                 }
                             }
@@ -330,9 +246,6 @@ namespace GPlus.Game.Clients
 
         public void Dispose()
         {
-            Disconnect();
-            RCON?.Dispose();
-            StopGMOD();
             StopSteam();
         }
 
