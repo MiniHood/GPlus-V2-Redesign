@@ -76,7 +76,7 @@
     <LibraryPath>../sdk/public/steam/lib/win64/;../sdk/redistributable_bin/win64/;../sdk/redistributable_bin/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>../sdk/public/steam/;../lua/;$(IncludePath)</IncludePath>
+    <IncludePath>../sdk/public/steam/;$(IncludePath)</IncludePath>
     <LibraryPath>../sdk/public/steam/lib/win64/;../sdk/redistributable_bin/win64/;../sdk/redistributable_bin/;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -87,6 +87,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -94,8 +95,8 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>if not exist "$(TargetDir)..\..\GPlus V2 Redesign\bin\Debug\net8.0-windows" mkdir "$(TargetDir)..\..\GPlus V2 Redesign\bin\Debug\net8.0-windows"
-copy /Y "$(TargetDir)$(TargetName).dll" "$(TargetDir)..\..\GPlus V2 Redesign\bin\Debug\net8.0-windows"
+      <Command>if not exist "$(TargetDir)..\..\GPlus V2 Redesign\GPlus V2 Redesign\bin\Debug\net8.0-windows" mkdir "$(TargetDir)..\..\GPlus V2 Redesign\GPlus V2 Redesign\bin\Debug\net8.0-windows"
+copy /Y "$(TargetDir)$(TargetName).dll" "$(TargetDir)..\..\GPlus V2 Redesign\GPlus V2 Redesign\bin\Debug\net8.0-windows"
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -164,6 +165,22 @@ copy /Y "$(TargetDir)$(TargetName).dll" "$(TargetDir)..\..\GPlus V2 Redesign\bin
   <ItemGroup>
     <Library Include="..\sdk\redistributable_bin\steam_api.lib" />
     <Library Include="..\sdk\redistributable_bin\win64\steam_api64.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CBasePlayer.h" />
+    <ClInclude Include="CClientEntityList.h" />
+    <ClInclude Include="CGlobalVarsBase.h" />
+    <ClInclude Include="CHLClient.h" />
+    <ClInclude Include="CLuaInterface.h" />
+    <ClInclude Include="CLuaShared.h" />
+    <ClInclude Include="CNetChan.h" />
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="ConVar.h" />
+    <ClInclude Include="CVar.h" />
+    <ClInclude Include="CEngineClient.h" />
+    <ClInclude Include="json.hpp" />
+    <ClInclude Include="memory.h" />
+    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
