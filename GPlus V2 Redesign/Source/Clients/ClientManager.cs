@@ -5,9 +5,7 @@ using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using Newtonsoft.Json;
-using System;
 using System.Diagnostics;
-using System.Text;
 
 namespace GPlus.Game.Clients
 {
@@ -25,7 +23,7 @@ namespace GPlus.Game.Clients
 
             Debug.WriteLine("Response: " + response.ToString());
 
-            switch(response.response)
+            switch (response.response)
             {
                 case ClientResponse.AUTHENABLED:
                     await SandboxieManager.DeleteSandbox(client.Environment);

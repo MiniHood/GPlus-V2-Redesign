@@ -3,12 +3,8 @@ using GPlus.Source.General;
 using GPlus.Source.GMOD;
 using GPlus.Source.Interprocess;
 using GPlus.Source.Sandboxing;
-using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using System.Diagnostics;
-using System.Management;
-using System.Net;
-using static SandboxieWrapper;
 
 
 namespace GPlus.Game.Clients
@@ -86,8 +82,9 @@ namespace GPlus.Game.Clients
 
                 var processResult = SandboxieWrapper.RunBoxed(
                     SettingsManager.CurrentSettings.General.SteamPath,
-                    new ProcessStartInfo { 
-                        Arguments =$"-login {LoginDetails.Username} {LoginDetails.Password} -silent -nobootstrapupdate -nocrashdialog -noverifyfiles"
+                    new ProcessStartInfo
+                    {
+                        Arguments = $"-login {LoginDetails.Username} {LoginDetails.Password} -silent -nobootstrapupdate -nocrashdialog -noverifyfiles"
                     },
                     Environment.SandboxName
                 );
@@ -191,7 +188,7 @@ namespace GPlus.Game.Clients
 
         public async Task StartGMODAsync()
         {
-            while(true)
+            while (true)
             {
                 bool Found = false;
                 foreach (var child in ProcessHelpers.GetChildProcessesRecursive(_steam.Id))

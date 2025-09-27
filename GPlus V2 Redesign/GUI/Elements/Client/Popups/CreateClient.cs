@@ -1,5 +1,4 @@
-﻿using GPlus.Game.Clients;
-using GPlus.Source.Sandboxing;
+﻿using GPlus.Source.Sandboxing;
 using GPlus.Source.Structs;
 
 namespace GPlus.GUI.Elements

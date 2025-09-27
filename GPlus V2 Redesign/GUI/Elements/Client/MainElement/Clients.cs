@@ -1,5 +1,4 @@
-﻿using GPlus.Game.Clients;
-using GPlus.GUI.Elements.Client.Popups;
+﻿using GPlus.GUI.Elements.Client.Popups;
 
 namespace GPlus.GUI.Elements
 {

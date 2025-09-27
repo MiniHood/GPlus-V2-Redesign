@@ -2,7 +2,6 @@
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;

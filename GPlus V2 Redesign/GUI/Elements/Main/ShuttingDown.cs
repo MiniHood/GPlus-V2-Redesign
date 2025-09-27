@@ -2,8 +2,6 @@
 using GPlus.GUI.Helpers;
 using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
-using System;
-using System.Diagnostics;
 
 namespace GPlus.GUI.Elements
 {
@@ -36,7 +34,7 @@ namespace GPlus.GUI.Elements
             if (SteamCMD.CurrentSteamCMDInstance != null)
             {
 
-                Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Shutting SteamCMD down." ));
+                Instance._lblFeedback.Invoke(new Action(() => Instance._lblFeedback.Text = "Shutting SteamCMD down."));
                 // Attempt to stop recovery loops, but if it doesn't end in time, force close it and clear logs
                 // to avoid recovery loops on next startup.
 

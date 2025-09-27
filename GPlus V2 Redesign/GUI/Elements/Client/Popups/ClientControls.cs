@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using GPlus.Game.Clients;
-using GPlus.Source.Interprocess;
-namespace GPlus.GUI.Elements.Client.Popups
+﻿namespace GPlus.GUI.Elements.Client.Popups
 {
     public partial class ClientControls : UserControl
     {
@@ -26,11 +14,12 @@ namespace GPlus.GUI.Elements.Client.Popups
 
             // Update labels, textboxes, etc.
             _lblUsername.Text = SelectedClient.LoginDetails.Username;
-            if(SelectedClient.GMOD.Process == null)
+            if (SelectedClient.GMOD.Process == null)
             {
                 _lblProcessID.Text = $"Process ID: Starting...";
                 _lblOnWebsocket.Text = $"Is Lua Ready: {(SelectedClient.GMOD.LuaReady ? "Yes" : "No")}";
-            } else
+            }
+            else
             {
                 _lblProcessID.Text = $"Process ID: {SelectedClient.GMOD.Process.Id.ToString()}";
                 _lblOnWebsocket.Text = $"Is Lua Ready: {(SelectedClient.GMOD.LuaReady ? "Yes" : "No")}";
