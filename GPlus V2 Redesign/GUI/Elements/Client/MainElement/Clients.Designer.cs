@@ -34,7 +34,7 @@
             _listColumn = new ColumnHeader();
             _btnCreateClient = new ReaLTaiizor.Controls.ParrotButton();
             _ucCreateClient = new CreateClient();
-            clientControls1 = new GPlus.GUI.Elements.Client.Popups.ClientControls();
+            _ucClientControls = new GPlus.GUI.Elements.Client.Popups.ClientControls();
             SuspendLayout();
             // 
             // _listClients
@@ -63,6 +63,7 @@
             _listClients.UseCustomForeColor = true;
             _listClients.UseSelectable = true;
             _listClients.UseStyleColors = true;
+            _listClients.SelectedIndexChanged += _listClients_SelectedIndexChanged;
             // 
             // _btnCreateClient
             // 
@@ -96,20 +97,20 @@
             _ucCreateClient.TabIndex = 9;
             _ucCreateClient.Visible = false;
             // 
-            // clientControls1
+            // _ucClientControls
             // 
-            clientControls1.BackColor = Color.FromArgb(26, 26, 26);
-            clientControls1.Location = new Point(3, 0);
-            clientControls1.Name = "clientControls1";
-            clientControls1.Size = new Size(422, 427);
-            clientControls1.TabIndex = 10;
+            _ucClientControls.BackColor = Color.FromArgb(26, 26, 26);
+            _ucClientControls.Location = new Point(3, 0);
+            _ucClientControls.Name = "_ucClientControls";
+            _ucClientControls.Size = new Size(422, 427);
+            _ucClientControls.TabIndex = 10;
             // 
             // Clients
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
-            Controls.Add(clientControls1);
+            Controls.Add(_ucClientControls);
             Controls.Add(_ucCreateClient);
             Controls.Add(_btnCreateClient);
             Controls.Add(_listClients);
@@ -124,6 +125,6 @@
         private ColumnHeader _listColumn;
         private ReaLTaiizor.Controls.ParrotButton _btnCreateClient;
         private CreateClient _ucCreateClient;
-        private Client.Popups.ClientControls clientControls1;
+        private Client.Popups.ClientControls _ucClientControls;
     }
 }
