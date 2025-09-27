@@ -40,6 +40,11 @@
             sToolStripMenuItem = new ToolStripMenuItem();
             dToolStripMenuItem = new ToolStripMenuItem();
             fToolStripMenuItem = new ToolStripMenuItem();
+            lostSeparator3 = new ReaLTaiizor.Controls.LostSeparator();
+            _lblOnWebsocket = new ReaLTaiizor.Controls.CrownLabel();
+            _lblProcessID = new ReaLTaiizor.Controls.CrownLabel();
+            _lblCurrentServer = new ReaLTaiizor.Controls.CrownLabel();
+            _btnTestLua = new ReaLTaiizor.Controls.ParrotButton();
             _contextServerItems.SuspendLayout();
             SuspendLayout();
             // 
@@ -184,11 +189,80 @@
             fToolStripMenuItem.Size = new Size(56, 22);
             fToolStripMenuItem.Text = "f";
             // 
+            // lostSeparator3
+            // 
+            lostSeparator3.BackColor = Color.FromArgb(36, 36, 36);
+            lostSeparator3.ForeColor = Color.FromArgb(36, 36, 36);
+            lostSeparator3.Horizontal = false;
+            lostSeparator3.Location = new Point(3, 211);
+            lostSeparator3.Name = "lostSeparator3";
+            lostSeparator3.Size = new Size(419, 3);
+            lostSeparator3.TabIndex = 12;
+            lostSeparator3.Text = "lostSeparator3";
+            // 
+            // _lblOnWebsocket
+            // 
+            _lblOnWebsocket.ForeColor = Color.FromArgb(220, 220, 220);
+            _lblOnWebsocket.Location = new Point(3, 134);
+            _lblOnWebsocket.Name = "_lblOnWebsocket";
+            _lblOnWebsocket.Size = new Size(175, 23);
+            _lblOnWebsocket.TabIndex = 13;
+            _lblOnWebsocket.Text = "Is Registered: No";
+            _lblOnWebsocket.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // _lblProcessID
+            // 
+            _lblProcessID.ForeColor = Color.FromArgb(220, 220, 220);
+            _lblProcessID.Location = new Point(3, 157);
+            _lblProcessID.Name = "_lblProcessID";
+            _lblProcessID.Size = new Size(175, 23);
+            _lblProcessID.TabIndex = 14;
+            _lblProcessID.Text = "Process ID: 0";
+            _lblProcessID.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // _lblCurrentServer
+            // 
+            _lblCurrentServer.ForeColor = Color.FromArgb(220, 220, 220);
+            _lblCurrentServer.Location = new Point(3, 180);
+            _lblCurrentServer.Name = "_lblCurrentServer";
+            _lblCurrentServer.Size = new Size(175, 23);
+            _lblCurrentServer.TabIndex = 15;
+            _lblCurrentServer.Text = "Current Server: 127.0.0.1";
+            _lblCurrentServer.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // _btnTestLua
+            // 
+            _btnTestLua.BackgroundColor = Color.FromArgb(36, 36, 36);
+            _btnTestLua.ButtonImage = null;
+            _btnTestLua.ButtonStyle = ReaLTaiizor.Controls.ParrotButton.Style.MaterialRounded;
+            _btnTestLua.ButtonText = "Test Lua";
+            _btnTestLua.ClickBackColor = Color.FromArgb(195, 195, 195);
+            _btnTestLua.ClickTextColor = Color.FromArgb(22, 22, 22);
+            _btnTestLua.CornerRadius = 5;
+            _btnTestLua.Horizontal_Alignment = StringAlignment.Center;
+            _btnTestLua.HoverBackgroundColor = Color.FromArgb(22, 22, 22);
+            _btnTestLua.HoverTextColor = Color.Gainsboro;
+            _btnTestLua.ImagePosition = ReaLTaiizor.Controls.ParrotButton.ImgPosition.Left;
+            _btnTestLua.Location = new Point(277, 137);
+            _btnTestLua.Name = "_btnTestLua";
+            _btnTestLua.Size = new Size(123, 26);
+            _btnTestLua.SmoothingType = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+            _btnTestLua.TabIndex = 16;
+            _btnTestLua.TextColor = Color.Gainsboro;
+            _btnTestLua.TextRenderingType = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+            _btnTestLua.Vertical_Alignment = StringAlignment.Center;
+            _btnTestLua.Click += _btnTestLua_Click;
+            // 
             // ClientControls
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(26, 26, 26);
+            Controls.Add(_btnTestLua);
+            Controls.Add(_lblCurrentServer);
+            Controls.Add(_lblProcessID);
+            Controls.Add(_lblOnWebsocket);
+            Controls.Add(lostSeparator3);
             Controls.Add(_btnServersDropDown);
             Controls.Add(_btnRemoveClient);
             Controls.Add(_btnDisconnect);
@@ -216,5 +290,10 @@
         private ToolStripMenuItem sToolStripMenuItem;
         private ToolStripMenuItem dToolStripMenuItem;
         private ToolStripMenuItem fToolStripMenuItem;
+        private ReaLTaiizor.Controls.LostSeparator lostSeparator3;
+        private ReaLTaiizor.Controls.CrownLabel _lblOnWebsocket;
+        private ReaLTaiizor.Controls.CrownLabel _lblProcessID;
+        private ReaLTaiizor.Controls.CrownLabel _lblCurrentServer;
+        private ReaLTaiizor.Controls.ParrotButton _btnTestLua;
     }
 }
