@@ -1,12 +1,15 @@
 ﻿using GPlus.Game.Clients;
 using GPlus.Source.General;
+using GPlus.Source.Interprocess;
 using GPlus.Source.Steam;
 using System.Diagnostics;
+using WebSocketSharp.Server;
 
 namespace GPlus.GUI.Elements
 {
     public partial class Setup : UserControl
     {
+        public static WebSocketServer server;
         public Setup()
         {
             InitializeComponent();
@@ -97,6 +100,7 @@ namespace GPlus.GUI.Elements
             }
             #endregion
 
+            #region GMOD Setup
             _progProgressBar.Invoke(new Action(() => _progProgressBar.Visible = false));
             _spinnerFeedback.Invoke(new Action(() => _spinnerFeedback.Visible = false));
 
@@ -106,6 +110,13 @@ namespace GPlus.GUI.Elements
                 _ucSetupAccount.Invoke(new Action(() => _ucSetupAccount.BringToFront()));
                 return true; // hand off to set up account uc
             }
+            #endregion
+
+            #region Communication Setup
+            ChangeLabelText("Initializing WebSocket Server");
+            _ = CommunicationTCP.StartAsync();
+            Debug.WriteLine("Started websocket server");
+            #endregion
 
             #region Load Clients
             ChangeLabelText("Loading saved clients...");
