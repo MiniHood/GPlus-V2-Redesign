@@ -5,6 +5,7 @@ using GPlus.Source.Sandboxing;
 using GPlus.Source.Steam;
 using GPlus.Source.Structs;
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
 using System.Text;
 
@@ -99,5 +100,9 @@ namespace GPlus.Game.Clients
         public static Client? GetClientByUsername(string username) =>
             _clients.FirstOrDefault(c =>
                 string.Equals(c.LoginDetails.Username, username, StringComparison.OrdinalIgnoreCase));
+
+        public static Client? GetClientByGMODPid(int pid) =>
+    _clients.FirstOrDefault(c =>
+        string.Equals(c.GMOD.Process.Id.ToString(), pid.ToString(), StringComparison.OrdinalIgnoreCase));
     }
 }
