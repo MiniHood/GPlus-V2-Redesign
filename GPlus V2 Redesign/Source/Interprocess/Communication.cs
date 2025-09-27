@@ -1,170 +1,117 @@
-﻿using System.Buffers.Binary;
-using System.IO.Pipes;
-using System.Runtime.InteropServices;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
-using static GPlus.Source.Interprocess.Memory;
+using System.Text.Json;
+using System.Threading.Tasks;
+using GPlus.Game.Clients;
 
 namespace GPlus.Source.Interprocess
 {
-    /// <summary>
-    /// Represents a single named-pipe server that accepts exactly one connection from the injected DLL.
-    /// Messages are length-prefixed (int32 little-endian) UTF-8 payloads.
-    /// </summary>
-    public class Communication : IDisposable
+    public static class CommunicationTCP
     {
-        public int TargetPid { get; }
-        public string PipeName { get; }
+        private static TcpListener listener;
+        public static ConcurrentDictionary<int, TcpClient> ConnectedClients = new(); // GMOD PID -> TcpClient
 
-        private readonly NamedPipeServerStream _server;
-        private readonly CancellationTokenSource _cts = new();
-        private readonly SemaphoreSlim _writeLock = new(1, 1);
-
-        private Stream? _stream;
-        private Task? _readerTask;
-
-        public bool IsConnected => _server.IsConnected;
-
-        public event EventHandler<string>? MessageReceived;
-        public event EventHandler? Connected;
-        public event EventHandler? Disconnected;
-        public event EventHandler<Exception>? Faulted;
-
-        public Communication(int targetPid, int maxBufferSize = 64 * 1024)
+        public static async Task StartAsync(int port = 8080)
         {
-            TargetPid = targetPid;
-            PipeName = $"gplus_comm_pipe_{targetPid}";
+            listener = new TcpListener(IPAddress.Any, port);
+            listener.Start();
+            Debug.WriteLine("TCP Server started.");
 
-            // Single instance, message mode, async
-            _server = new NamedPipeServerStream(
-                PipeName,
-                PipeDirection.InOut,
-                maxNumberOfServerInstances: 1,
-                transmissionMode: PipeTransmissionMode.Byte,
-                options: PipeOptions.Asynchronous);
-        }
-
-        /// <summary>
-        /// Waits for the client (DLL) to connect and starts the receive loop.
-        /// </summary>
-        public async Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            var linked = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token, cancellationToken);
-            try
+            while (true)
             {
-                await _server.WaitForConnectionAsync(linked.Token).ConfigureAwait(false);
-                _stream = _server; // use raw stream
-                Connected?.Invoke(this, EventArgs.Empty);
-
-                _readerTask = Task.Run(() => ReadLoopAsync(linked.Token), linked.Token);
-            }
-            catch (OperationCanceledException) { /* cancelled */ }
-            catch (Exception ex)
-            {
-                Faulted?.Invoke(this, ex);
+                var client = await listener.AcceptTcpClientAsync();
+                _ = HandleClientAsync(client);
             }
         }
 
-        private async Task ReadLoopAsync(CancellationToken ct)
+        private static async Task HandleClientAsync(TcpClient client)
         {
+            var stream = client.GetStream();
+            var buffer = new byte[4096];
+            int? gmodPid = null;
+
             try
             {
-                var lengthBuf = new byte[4];
-                while (!ct.IsCancellationRequested && _server.IsConnected)
+                int bytesRead;
+                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length)) != 0)
                 {
-                    // Read exactly 4 bytes for length
-                    int read = await ReadExactlyAsync(_stream!, lengthBuf, 0, 4, ct).ConfigureAwait(false);
-                    if (read == 0) break; // disconnected
+                    string json = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
+                    Debug.WriteLine($"Received JSON: {json}");
 
-                    int payloadLen = BinaryPrimitives.ReadInt32LittleEndian(lengthBuf);
-                    if (payloadLen <= 0)
-                        continue;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(json);
+                        var root = doc.RootElement;
 
-                    var buf = new byte[payloadLen];
-                    await ReadExactlyAsync(_stream!, buf, 0, payloadLen, ct).ConfigureAwait(false);
+                        if (root.TryGetProperty("PID", out var pidProp))
+                        {
+                            gmodPid = pidProp.GetInt32();
+                            ConnectedClients.TryAdd(gmodPid.Value, client);
+                        }
 
-                    var msg = Encoding.UTF8.GetString(buf);
-                    MessageReceived?.Invoke(this, msg);
+                        if (root.TryGetProperty("LuaReady", out var luaProp) && gmodPid.HasValue)
+                        {
+                            var clientInstance = ClientManager.GetClientByGMODPid(gmodPid.Value);
+                            if (clientInstance != null)
+                                clientInstance.GMOD.LuaReady = luaProp.GetBoolean();
+                        }
+
+                        if (root.TryGetProperty("Responses", out var responses) && responses.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (var resp in responses.EnumerateArray())
+                            {
+                                string command = resp.GetProperty("Command").GetString() ?? "";
+                                string result = resp.GetProperty("Result").GetString() ?? "";
+                                bool success = resp.GetProperty("Success").GetBoolean();
+                                Debug.WriteLine($"Client {gmodPid} executed: {command}, success={success}, result={result}");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Failed to parse JSON: {ex.Message}");
+                    }
                 }
             }
-            catch (OperationCanceledException) { /* stopped */ }
             catch (Exception ex)
             {
-                Faulted?.Invoke(this, ex);
+                Debug.WriteLine($"Client error: {ex.Message}");
             }
             finally
             {
-                TryDisconnect();
+                if (gmodPid.HasValue)
+                {
+                    ConnectedClients.TryRemove(gmodPid.Value, out _);
+                    var clientInstance = ClientManager.GetClientByGMODPid(gmodPid.Value);
+                    if (clientInstance != null)
+                        clientInstance.GMOD.LuaReady = false;
+                }
+                client.Close();
             }
         }
 
-        private static async Task<int> ReadExactlyAsync(Stream s, byte[] buffer, int offset, int count, CancellationToken ct)
+
+        public static async Task SendCommandToClient(int pid, string type, string data)
         {
-            int total = 0;
-            while (total < count)
+            if (ConnectedClients.TryGetValue(pid, out var client))
             {
-                int n = await s.ReadAsync(buffer, offset + total, count - total, ct).ConfigureAwait(false);
-                if (n == 0) return 0; // remote closed
-                total += n;
+                var msg = new
+                {
+                    Commands = new[]
+                    {
+                new { Type = type, Data = data }
             }
-            return total;
-        }
+                };
 
-        /// <summary>
-        /// Sends a UTF-8 message using length-prefixed framing.
-        /// </summary>
-        public async Task SendAsync(string message, CancellationToken ct = default)
-        {
-            if (_stream == null || !_server.IsConnected)
-                throw new InvalidOperationException("Not connected.");
-
-            var payload = Encoding.UTF8.GetBytes(message);
-            var header = new byte[4];
-            BinaryPrimitives.WriteInt32LittleEndian(header, payload.Length);
-
-            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
-            try
-            {
-                await _stream.WriteAsync(header, 0, 4, ct).ConfigureAwait(false);
-                await _stream.WriteAsync(payload, 0, payload.Length, ct).ConfigureAwait(false);
-                await _stream.FlushAsync(ct).ConfigureAwait(false);
-            }
-            finally
-            {
-                _writeLock.Release();
+                string json = JsonSerializer.Serialize(msg) + "\n";
+                byte[] bytes = Encoding.UTF8.GetBytes(json);
+                await client.GetStream().WriteAsync(bytes, 0, bytes.Length);
             }
         }
 
-        /// <summary>
-        /// Stops and disposes the connection.
-        /// </summary>
-        public void Stop()
-        {
-            _cts.Cancel();
-            TryDisconnect();
-        }
-
-        private void TryDisconnect()
-        {
-            try
-            {
-                if (_server.IsConnected)
-                    _server.Disconnect();
-            }
-            catch { }
-            finally
-            {
-                _stream?.Dispose();
-                _readerTask = null;
-                Disconnected?.Invoke(this, EventArgs.Empty);
-            }
-        }
-
-        public void Dispose()
-        {
-            Stop();
-            _server.Dispose();
-            _cts.Dispose();
-            _writeLock.Dispose();
-        }
     }
 }
